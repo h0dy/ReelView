@@ -1,0 +1,17 @@
+package auth
+
+import (
+	"fmt"
+
+	"golang.org/x/crypto/bcrypt"
+)
+
+// HashPassword func hashes plain password using bcrypt with 12 cost
+func HashPassword(password string) (string, error) {
+	hashedPass, err := bcrypt.GenerateFromPassword([]byte(password), 12)
+	if err != nil {
+		return "", fmt.Errorf("error in hashing password: %v", err)
+	}
+
+	return string(hashedPass), nil
+}
