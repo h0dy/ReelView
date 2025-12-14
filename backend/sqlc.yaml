@@ -1,8 +1,11 @@
 version: "2"
 sql:
-  - engine: "postgresql"
+  # - schema: "internal/sql/schema"
+  - schema:
+    - "internal/sql/schema/001_users.sql" 
+    - "internal/sql/schema/002_refresh_tokens.sql"
     queries: "internal/sql/queries"
-    schema: "internal/sql/schema"
+    engine: "postgresql"
     gen:
       go:
         out: "internal/database"

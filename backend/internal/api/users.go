@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -9,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/h0dy/ReelView/backend/internal/auth"
 	"github.com/h0dy/ReelView/backend/internal/database"
+	"github.com/h0dy/ReelView/backend/internal/middleware"
 )
 
 type User struct { // User strut to hold json response
@@ -74,5 +76,92 @@ func (cfg *APIConfig) HandlerCreateUser(w http.ResponseWriter, r *http.Request) 
 		UpdatedAt: user.UpdatedAt,
 		Email:     user.Email,
 		IsPremium: user.IsPremium,
+	})
+}
+
+func (cfg *APIConfig) HandlerUserLogin(w http.ResponseWriter, r *http.Request) {
+	type reqBody struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+	type response struct {
+		User
+		Token string `json:"token"`
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	defer r.Body.Close()
+
+	data := reqBody{}
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&data); err != nil {
+		respondWithErr(w, http.StatusInternalServerError, "Couldn't decode the json data", err)
+	}
+
+	user, err := cfg.DB.GetUserByEmail(r.Context(), data.Email)
+	if err != nil {
+		respondWithErr(w, http.StatusBadRequest, "Incorrect credential", err)
+		return
+	}
+	if err := auth.CheckPasswordHash(data.Password, user.HashedPassword); err != nil {
+		respondWithErr(w, http.StatusUnauthorized, "Incorrect credential", err)
+		return
+	}
+
+	accessToken, err := auth.MakeJWT(user.ID, cfg.JWTSecret, time.Minute*10)
+	if err != nil {
+		respondWithErr(w, http.StatusInternalServerError, "Couldn't create access token", err)
+		return
+	}
+
+	refreshToken := auth.MarkRefreshToken()
+	_, err = cfg.DB.CreateRefreshToken(r.Context(), database.CreateRefreshTokenParams{
+		Token:     refreshToken,
+		UserID:    user.ID,
+		ExpiresAt: time.Now().UTC().Add(time.Hour * 24 * 60),
+	})
+	if err != nil {
+		respondWithErr(w, http.StatusInternalServerError, "Couldn't create access JWT", err)
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "refresh_token",
+		Value:    refreshToken,
+		HttpOnly: true,
+		Secure:   cfg.Platform != "dev",
+		SameSite: http.SameSiteStrictMode,
+		Path:     "/api/refresh",
+		MaxAge:   60 * 24 * 60 * 60, // 60 days
+	})
+
+	respondWithJson(w, http.StatusOK, response{
+		User: User{
+			ID:        user.ID,
+			CreatedAt: user.CreatedAt,
+			UpdatedAt: user.UpdatedAt,
+			Email:     user.Email,
+			IsPremium: user.IsPremium,
+		},
+		Token: accessToken,
+	})
+}
+
+func (cfg *APIConfig) HandlerTestToken(w http.ResponseWriter, r *http.Request) {
+	type response struct {
+		Message string `json:"message"`
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	defer r.Body.Close()
+
+	userId, ok := r.Context().Value(middleware.UserIDKey).(uuid.UUID)
+	if !ok {
+		respondWithErr(w, http.StatusUnauthorized, "Unauthorized", nil)
+		return
+	}
+
+	respondWithJson(w, http.StatusOK, response{
+		Message: fmt.Sprintf("welcome back, your user id is: %s", userId.String()),
 	})
 }

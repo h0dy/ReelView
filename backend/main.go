@@ -9,6 +9,7 @@ import (
 
 	"github.com/h0dy/ReelView/backend/internal/api"
 	"github.com/h0dy/ReelView/backend/internal/database"
+	"github.com/h0dy/ReelView/backend/internal/middleware"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
@@ -32,6 +33,10 @@ func main() {
 	if platform == "" {
 		log.Fatal("platform must be set")
 	}
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		log.Fatal("make sure you set up JWT_SECRET")
+	}
 
 	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
@@ -50,16 +55,28 @@ func main() {
 
 	mux := http.NewServeMux()
 
+	// public
 	mux.HandleFunc("GET /api/healthz", apiConfig.HandlerReadiness)
 	mux.HandleFunc("POST /admin/reset", apiConfig.HandlerReset)
 
 	mux.HandleFunc("POST /api/users", apiConfig.HandlerCreateUser)
+	mux.HandleFunc("POST /api/login", apiConfig.HandlerUserLogin)
+
+	mux.HandleFunc("POST /api/refresh", apiConfig.HandlerRefreshToken)
+
+	// protected
+	mux.Handle(
+		"POST /api/protected",
+		middleware.JWTAuth(apiConfig.JWTSecret)(
+			http.HandlerFunc(apiConfig.HandlerTestToken),
+		),
+	)
 
 	server := http.Server{
-		Addr:    ":" + port,
+		Addr:    ":" + apiConfig.Port,
 		Handler: mux,
 	}
 
-	fmt.Printf("Listing on http://localhost:%v\n", port)
+	fmt.Printf("Listing on http://localhost:%v\n", apiConfig.Port)
 	log.Fatal(server.ListenAndServe())
 }
