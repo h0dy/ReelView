@@ -6,8 +6,10 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/h0dy/ReelView/backend/internal/api"
+	"github.com/h0dy/ReelView/backend/internal/client"
 	"github.com/h0dy/ReelView/backend/internal/database"
 	"github.com/h0dy/ReelView/backend/internal/middleware"
 	"github.com/joho/godotenv"
@@ -38,6 +40,11 @@ func main() {
 		log.Fatal("make sure you set up JWT_SECRET")
 	}
 
+	tmdbAcessToken := os.Getenv("TMDB_TOKEN")
+	if jwtSecret == "" {
+		log.Fatal("make sure you set up TMDB_TOKEN")
+	}
+
 	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
 		log.Fatalf("couldn't connect to database: %v\n", err)
@@ -46,11 +53,13 @@ func main() {
 
 	// register the generated functions for our database queries from sqlc
 	dbQueries := database.New(db)
+	tmdbClient := client.NewTmdbClient(5*time.Second, tmdbAcessToken)
 
 	apiConfig := api.APIConfig{
-		Platform: platform,
-		Port:     port,
-		DB:       dbQueries,
+		Platform:   platform,
+		Port:       port,
+		DB:         dbQueries,
+		TmdbClient: tmdbClient,
 	}
 
 	mux := http.NewServeMux()
@@ -63,6 +72,8 @@ func main() {
 	mux.HandleFunc("POST /api/login", apiConfig.HandlerUserLogin)
 
 	mux.HandleFunc("POST /api/refresh", apiConfig.HandlerRefreshToken)
+
+	mux.HandleFunc("GET /api/movies", apiConfig.HandlerGetMovies)
 
 	// protected
 	mux.Handle(
