@@ -10,16 +10,26 @@ func (cfg *APIConfig) HandlerGetMovies(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	defer r.Body.Close()
 
-	if movieTitle == "" {
-		respondWithErr(w, http.StatusBadRequest, "Make sure to provide a movie name", nil)
-		return
-	}
-
-	movies, err := cfg.TmdbClient.GetMoviesByTitle(r.Context(), movieTitle)
+	movies, err := cfg.TmdbClient.GetMovies(r.Context(), movieTitle, "week")
 	if err != nil {
 		respondWithErr(w, http.StatusNotFound, "Couldn't find a movie", err)
 		return
 	}
 
 	respondWithJson(w, http.StatusOK, movies)
+}
+
+func (cfg *APIConfig) HandlerGetMovieDetails(w http.ResponseWriter, r *http.Request) {
+	movieId := r.PathValue("movieId")
+
+	w.Header().Set("Content-Type", "application/json")
+	defer r.Body.Close()
+
+	movie, err := cfg.TmdbClient.GetMovieDetails(r.Context(), movieId)
+	if err != nil {
+		respondWithErr(w, http.StatusNotFound, "couldn't find a movie", err)
+		return
+	}
+
+	respondWithJson(w, http.StatusOK, movie)
 }

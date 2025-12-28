@@ -7,8 +7,14 @@ import (
 	"net/http"
 )
 
-func (client *TmdbClient) GetMoviesByTitle(ctx context.Context, title string) (Movies, error) {
+func (client *TmdbClient) GetMovies(ctx context.Context, title string, timeWindow string) (Movies, error) {
 	url := fmt.Sprintf("%s/search/movie?query=%s", baseURL, title)
+	if title == "" {
+		url = fmt.Sprintf("%s/trending/movie/%s", baseURL, "day")
+		if timeWindow == "week" {
+			url = fmt.Sprintf("%s/trending/movie/%s", baseURL, "week")
+		}
+	}
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
@@ -31,11 +37,11 @@ func (client *TmdbClient) GetMoviesByTitle(ctx context.Context, title string) (M
 		return Movies{}, err
 	}
 	for idx, movie := range movies.Results {
-		movies.Results[idx].BackdropPath = imgBaseURL + movie.BackdropPath
 		movies.Results[idx].PosterPath = imgBaseURL + movie.PosterPath
 		for _, id := range movie.GenreIds {
 			movies.Results[idx].Genre = append(movies.Results[idx].Genre, MovieGenre[id])
 		}
 	}
+
 	return movies, nil
 }

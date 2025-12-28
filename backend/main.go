@@ -74,6 +74,7 @@ func main() {
 	mux.HandleFunc("POST /api/refresh", apiConfig.HandlerRefreshToken)
 
 	mux.HandleFunc("GET /api/movies", apiConfig.HandlerGetMovies)
+	mux.HandleFunc("GET /api/movies/{movieId}", apiConfig.HandlerGetMovieDetails)
 
 	// protected
 	mux.Handle(
