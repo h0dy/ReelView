@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"strconv"
 )
 
 func (cfg *APIConfig) HandlerGetMovies(w http.ResponseWriter, r *http.Request) {
@@ -20,7 +21,7 @@ func (cfg *APIConfig) HandlerGetMovies(w http.ResponseWriter, r *http.Request) {
 }
 
 func (cfg *APIConfig) HandlerGetMovieDetails(w http.ResponseWriter, r *http.Request) {
-	movieId := r.PathValue("movieId")
+	movieId, _ := strconv.Atoi(r.PathValue("movieId"))
 
 	w.Header().Set("Content-Type", "application/json")
 	defer r.Body.Close()

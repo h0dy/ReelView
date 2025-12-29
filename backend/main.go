@@ -76,6 +76,13 @@ func main() {
 	mux.HandleFunc("GET /api/movies", apiConfig.HandlerGetMovies)
 	mux.HandleFunc("GET /api/movies/{movieId}", apiConfig.HandlerGetMovieDetails)
 
+	mux.Handle(
+		"POST /api/movies/{movieId}/reviews",
+		middleware.JWTAuth(apiConfig.JWTSecret)(
+			http.HandlerFunc(apiConfig.HandlerCreateMovieReview),
+		),
+	)
+
 	// protected
 	mux.Handle(
 		"POST /api/protected",

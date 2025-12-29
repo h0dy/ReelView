@@ -7,8 +7,8 @@ import (
 	"net/http"
 )
 
-func (client *TmdbClient) GetMovieDetails(ctx context.Context, movieId string) (MovieDetails, error) {
-	url := fmt.Sprintf("%s/movie/%s", baseURL, movieId)
+func (client *TmdbClient) GetMovieDetails(ctx context.Context, movieId int) (MovieDetails, error) {
+	url := fmt.Sprintf("%s/movie/%v", baseURL, movieId)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {

@@ -2,8 +2,9 @@ version: "2"
 sql:
   # - schema: "internal/sql/schema"
   - schema:
-    - "internal/sql/schema/001_users.sql" 
-    - "internal/sql/schema/002_refresh_tokens.sql"
+      - "internal/sql/schema/001_users.sql"
+      - "internal/sql/schema/002_refresh_tokens.sql"
+      - "internal/sql/schema/003_movie_reviews.sql"
     queries: "internal/sql/queries"
     engine: "postgresql"
     gen:

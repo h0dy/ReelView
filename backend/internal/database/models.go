@@ -11,6 +11,17 @@ import (
 	"github.com/google/uuid"
 )
 
+type MovieReview struct {
+	ID        uuid.UUID
+	MovieID   int32
+	UserID    uuid.UUID
+	Review    string
+	Rating    float32
+	IsSpoiler bool
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
 type RefreshToken struct {
 	Token     string
 	CreatedAt time.Time
