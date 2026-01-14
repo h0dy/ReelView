@@ -47,6 +47,20 @@ func (q *Queries) CreateMovieReview(ctx context.Context, arg CreateMovieReviewPa
 	return i, err
 }
 
+const deleteReview = `-- name: DeleteReview :exec
+DELETE FROM movie_reviews WHERE id = $1 AND movie_id = $2
+`
+
+type DeleteReviewParams struct {
+	ID      uuid.UUID
+	MovieID int32
+}
+
+func (q *Queries) DeleteReview(ctx context.Context, arg DeleteReviewParams) error {
+	_, err := q.db.ExecContext(ctx, deleteReview, arg.ID, arg.MovieID)
+	return err
+}
+
 const getMovieReviews = `-- name: GetMovieReviews :many
 SELECT id, movie_id, user_id, review, rating, is_spoiler, created_at, updated_at FROM movie_reviews
  WHERE movie_id = $1

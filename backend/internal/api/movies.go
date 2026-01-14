@@ -40,8 +40,6 @@ func (cfg *APIConfig) HandlerGetMovieDetails(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	movieReviews, _ := cfg.DB.GetMovieReviews(r.Context(), int32(movieId))
-	// if err != nil {
-	// }
 
 	respondWithJson(w, http.StatusOK, response{
 		Movie:   movie,

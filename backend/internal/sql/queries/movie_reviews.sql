@@ -6,3 +6,6 @@ RETURNING *;
 -- name: GetMovieReviews :many
 SELECT * FROM movie_reviews
  WHERE movie_id = $1;
+
+-- name: DeleteReview :exec
+DELETE FROM movie_reviews WHERE id = $1 AND movie_id = $2;

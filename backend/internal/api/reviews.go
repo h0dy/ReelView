@@ -79,3 +79,20 @@ func (cfg *APIConfig) HandlerCreateMovieReview(w http.ResponseWriter, r *http.Re
 		Review: reviewRecord,
 	})
 }
+
+func (cfg *APIConfig) HandlerDeleteMovieReview(w http.ResponseWriter, r *http.Request) {
+	movieId, _ := strconv.ParseInt(r.PathValue("movieId"), 10, 32)
+	reviewId, err := uuid.Parse(r.PathValue("reviewId"))
+	if err != nil {
+		respondWithErr(w, http.StatusBadRequest, "invalid review id", err)
+		return
+	}
+	if err := cfg.DB.DeleteReview(r.Context(), database.DeleteReviewParams{
+		ID:      reviewId,
+		MovieID: int32(movieId),
+	}); err != nil {
+		respondWithErr(w, http.StatusNotFound, "review not found", err)
+		return
+	}
+	respondWithJson(w, http.StatusNoContent, struct{}{})
+}

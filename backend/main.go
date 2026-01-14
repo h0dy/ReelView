@@ -82,6 +82,12 @@ func main() {
 			http.HandlerFunc(apiConfig.HandlerCreateMovieReview),
 		),
 	)
+	mux.Handle(
+		"DELETE /api/movies/{movieId}/reviews/{reviewId}",
+		middleware.JWTAuth(apiConfig.JWTSecret)(
+			http.HandlerFunc(apiConfig.HandlerDeleteMovieReview),
+		),
+	)
 
 	// protected
 	mux.Handle(
