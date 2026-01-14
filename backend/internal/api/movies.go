@@ -3,6 +3,9 @@ package api
 import (
 	"net/http"
 	"strconv"
+
+	"github.com/h0dy/ReelView/backend/internal/client"
+	"github.com/h0dy/ReelView/backend/internal/database"
 )
 
 func (cfg *APIConfig) HandlerGetMovies(w http.ResponseWriter, r *http.Request) {
@@ -23,6 +26,11 @@ func (cfg *APIConfig) HandlerGetMovies(w http.ResponseWriter, r *http.Request) {
 func (cfg *APIConfig) HandlerGetMovieDetails(w http.ResponseWriter, r *http.Request) {
 	movieId, _ := strconv.Atoi(r.PathValue("movieId"))
 
+	type response struct {
+		Movie   client.MovieDetails    `json:"movie"`
+		Reviews []database.MovieReview `json:"review"`
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	defer r.Body.Close()
 
@@ -31,6 +39,12 @@ func (cfg *APIConfig) HandlerGetMovieDetails(w http.ResponseWriter, r *http.Requ
 		respondWithErr(w, http.StatusNotFound, "couldn't find a movie", err)
 		return
 	}
+	movieReviews, _ := cfg.DB.GetMovieReviews(r.Context(), int32(movieId))
+	// if err != nil {
+	// }
 
-	respondWithJson(w, http.StatusOK, movie)
+	respondWithJson(w, http.StatusOK, response{
+		Movie:   movie,
+		Reviews: movieReviews,
+	})
 }

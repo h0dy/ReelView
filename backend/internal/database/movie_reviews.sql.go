@@ -46,3 +46,40 @@ func (q *Queries) CreateMovieReview(ctx context.Context, arg CreateMovieReviewPa
 	)
 	return i, err
 }
+
+const getMovieReviews = `-- name: GetMovieReviews :many
+SELECT id, movie_id, user_id, review, rating, is_spoiler, created_at, updated_at FROM movie_reviews
+ WHERE movie_id = $1
+`
+
+func (q *Queries) GetMovieReviews(ctx context.Context, movieID int32) ([]MovieReview, error) {
+	rows, err := q.db.QueryContext(ctx, getMovieReviews, movieID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []MovieReview
+	for rows.Next() {
+		var i MovieReview
+		if err := rows.Scan(
+			&i.ID,
+			&i.MovieID,
+			&i.UserID,
+			&i.Review,
+			&i.Rating,
+			&i.IsSpoiler,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
