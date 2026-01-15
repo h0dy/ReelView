@@ -10,11 +10,12 @@ import (
 
 func (cfg *APIConfig) HandlerGetMovies(w http.ResponseWriter, r *http.Request) {
 	movieTitle := r.URL.Query().Get("name")
+	period := r.URL.Query().Get("period")
 
 	w.Header().Set("Content-Type", "application/json")
 	defer r.Body.Close()
 
-	movies, err := cfg.TmdbClient.GetMovies(r.Context(), movieTitle, "week")
+	movies, err := cfg.TmdbClient.GetMovies(r.Context(), movieTitle, period)
 	if err != nil {
 		respondWithErr(w, http.StatusNotFound, "Couldn't find a movie", err)
 		return
