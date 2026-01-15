@@ -11,7 +11,6 @@ import (
 	"github.com/h0dy/ReelView/backend/internal/api"
 	"github.com/h0dy/ReelView/backend/internal/client"
 	"github.com/h0dy/ReelView/backend/internal/database"
-	"github.com/h0dy/ReelView/backend/internal/middleware"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
@@ -78,13 +77,13 @@ func main() {
 
 	mux.Handle(
 		"POST /api/movies/{movieId}/reviews",
-		middleware.JWTAuth(apiConfig.JWTSecret)(
+		apiConfig.JWTAuth(apiConfig.JWTSecret)(
 			http.HandlerFunc(apiConfig.HandlerCreateMovieReview),
 		),
 	)
 	mux.Handle(
 		"DELETE /api/movies/{movieId}/reviews/{reviewId}",
-		middleware.JWTAuth(apiConfig.JWTSecret)(
+		apiConfig.JWTAuth(apiConfig.JWTSecret)(
 			http.HandlerFunc(apiConfig.HandlerDeleteMovieReview),
 		),
 	)
@@ -92,7 +91,7 @@ func main() {
 	// protected
 	mux.Handle(
 		"POST /api/protected",
-		middleware.JWTAuth(apiConfig.JWTSecret)(
+		apiConfig.JWTAuth(apiConfig.JWTSecret)(
 			http.HandlerFunc(apiConfig.HandlerTestToken),
 		),
 	)

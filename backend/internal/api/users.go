@@ -10,10 +10,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/h0dy/ReelView/backend/internal/auth"
 	"github.com/h0dy/ReelView/backend/internal/database"
-	"github.com/h0dy/ReelView/backend/internal/middleware"
 )
 
-type User struct { // User strut to hold json response
+type AuthUser struct { // User strut to hold json response
 	ID        uuid.UUID `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -70,7 +69,7 @@ func (cfg *APIConfig) HandlerCreateUser(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	respondWithJson(w, http.StatusCreated, User{
+	respondWithJson(w, http.StatusCreated, AuthUser{
 		ID:        user.ID,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
@@ -85,8 +84,8 @@ func (cfg *APIConfig) HandlerUserLogin(w http.ResponseWriter, r *http.Request) {
 		Password string `json:"password"`
 	}
 	type response struct {
-		User
-		Token string `json:"token"`
+		User  AuthUser `json:"user"`
+		Token string   `json:"token"`
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -136,7 +135,7 @@ func (cfg *APIConfig) HandlerUserLogin(w http.ResponseWriter, r *http.Request) {
 	})
 
 	respondWithJson(w, http.StatusOK, response{
-		User: User{
+		User: AuthUser{
 			ID:        user.ID,
 			CreatedAt: user.CreatedAt,
 			UpdatedAt: user.UpdatedAt,
@@ -155,13 +154,13 @@ func (cfg *APIConfig) HandlerTestToken(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	defer r.Body.Close()
 
-	userId, ok := r.Context().Value(middleware.UserIDKey).(uuid.UUID)
+	user, ok := r.Context().Value(UserContextKey).(*AuthUser)
 	if !ok {
 		respondWithErr(w, http.StatusUnauthorized, "Unauthorized", nil)
 		return
 	}
 
 	respondWithJson(w, http.StatusOK, response{
-		Message: fmt.Sprintf("welcome back, your user id is: %s", userId.String()),
+		Message: fmt.Sprintf("welcome back, your user id is: %s", user.ID.String()),
 	})
 }

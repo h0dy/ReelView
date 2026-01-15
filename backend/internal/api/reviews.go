@@ -8,7 +8,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/h0dy/ReelView/backend/internal/database"
-	"github.com/h0dy/ReelView/backend/internal/middleware"
 )
 
 func (cfg *APIConfig) HandlerCreateMovieReview(w http.ResponseWriter, r *http.Request) {
@@ -19,7 +18,7 @@ func (cfg *APIConfig) HandlerCreateMovieReview(w http.ResponseWriter, r *http.Re
 	}
 
 	type response struct {
-		User   User `json:"user"`
+		User   AuthUser `json:"user"`
 		Review database.MovieReview
 	}
 
@@ -32,15 +31,10 @@ func (cfg *APIConfig) HandlerCreateMovieReview(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	userId, ok := r.Context().Value(middleware.UserIDKey).(uuid.UUID)
-	user, err := cfg.DB.GetUserByID(r.Context(), userId)
-	if !ok || err != nil {
-		respondWithErr(w, http.StatusUnauthorized, "Unauthorized", nil)
-		return
-	}
+	user := r.Context().Value(UserContextKey).(*AuthUser)
 
 	if review.Rating > 10 || review.Rating < 0 {
-		respondWithErr(w, http.StatusBadRequest, "invalid rating", err)
+		respondWithErr(w, http.StatusBadRequest, "invalid rating", nil)
 		return
 	}
 
@@ -55,7 +49,7 @@ func (cfg *APIConfig) HandlerCreateMovieReview(w http.ResponseWriter, r *http.Re
 		r.Context(),
 		database.CreateMovieReviewParams{
 			MovieID:   int32(movieId),
-			UserID:    userId,
+			UserID:    user.ID,
 			Review:    review.Body,
 			Rating:    review.Rating,
 			IsSpoiler: review.IsSpoiler,
@@ -69,7 +63,7 @@ func (cfg *APIConfig) HandlerCreateMovieReview(w http.ResponseWriter, r *http.Re
 	}
 
 	respondWithJson(w, http.StatusCreated, response{
-		User: User{
+		User: AuthUser{
 			ID:        user.ID,
 			CreatedAt: user.CreatedAt,
 			UpdatedAt: user.UpdatedAt,
