@@ -91,7 +91,7 @@ func main() {
 	mux.Handle(
 		"POST /api/dairy/movies",
 		apiConfig.JWTAuth(apiConfig.JWTSecret)(
-			http.HandlerFunc(apiConfig.HandlerCreateDairyMovie),
+			http.HandlerFunc(apiConfig.HandlerCreateMovieDiary),
 		),
 	)
 

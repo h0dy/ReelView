@@ -8,7 +8,7 @@ import (
 	"github.com/h0dy/ReelView/backend/internal/database"
 )
 
-func (cfg *APIConfig) HandlerCreateDairyMovie(w http.ResponseWriter, r *http.Request) {
+func (cfg *APIConfig) HandlerCreateMovieDiary(w http.ResponseWriter, r *http.Request) {
 	type reqBody struct {
 		MovieID     int    `json:"movie_id"`
 		WatchedAt   string `json:"watched_at"`
@@ -46,7 +46,7 @@ func (cfg *APIConfig) HandlerCreateDairyMovie(w http.ResponseWriter, r *http.Req
 
 	user := r.Context().Value(UserContextKey).(*AuthUser)
 
-	dairy, err := cfg.DB.CreateDairyMovie(r.Context(), database.CreateDairyMovieParams{
+	dairy, err := cfg.DB.CreateMovieDiary(r.Context(), database.CreateMovieDiaryParams{
 		MovieID:     int32(body.MovieID),
 		UserID:      user.ID,
 		WatchedAt:   watchedAt,

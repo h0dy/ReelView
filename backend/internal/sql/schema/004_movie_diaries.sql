@@ -1,5 +1,5 @@
 -- +goose Up
-CREATE TABLE dairy_movies (
+CREATE TABLE movie_diaries (
   id uuid PRIMARY KEY NOT NULL,
   movie_id INT NOT NULL, 
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -11,4 +11,4 @@ CREATE TABLE dairy_movies (
 );
 
 -- +goose Down
-DROP TABLE dairy_movies;
+DROP TABLE movie_diaries;

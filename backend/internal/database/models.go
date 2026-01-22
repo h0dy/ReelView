@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type DairyMovie struct {
+type MovieDiary struct {
 	ID          uuid.UUID
 	MovieID     int32
 	UserID      uuid.UUID
