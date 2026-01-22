@@ -27,8 +27,12 @@ func (cfg *APIConfig) HandlerCreateMovieReview(w http.ResponseWriter, r *http.Re
 
 	review := reqBody{}
 	if err := json.NewDecoder(r.Body).Decode(&review); err != nil {
-		respondWithErr(w, http.StatusInternalServerError, "something went wrong", err)
+		respondWithErr(w, http.StatusBadRequest, "invalid field type", err)
 		return
+	}
+
+	if review.Body == "" && review.Rating == 0 {
+		respondWithErr(w, http.StatusBadRequest, "please provide a rating or review", nil)
 	}
 
 	user := r.Context().Value(UserContextKey).(*AuthUser)

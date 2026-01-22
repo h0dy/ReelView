@@ -33,7 +33,7 @@ func (cfg *APIConfig) HandlerCreateUser(w http.ResponseWriter, r *http.Request) 
 	params := reqBody{}
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&params); err != nil {
-		respondWithErr(w, http.StatusInternalServerError, "Internal server error", err)
+		respondWithErr(w, http.StatusBadRequest, "Internal server error", err)
 		return
 	}
 

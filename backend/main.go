@@ -88,11 +88,18 @@ func main() {
 		),
 	)
 
+	mux.Handle(
+		"POST /api/dairy/movies",
+		apiConfig.JWTAuth(apiConfig.JWTSecret)(
+			http.HandlerFunc(apiConfig.HandlerCreateDairyMovie),
+		),
+	)
+
 	// protected
 	mux.Handle(
-		"POST /api/protected",
-		apiConfig.JWTAuth(apiConfig.JWTSecret)(
-			http.HandlerFunc(apiConfig.HandlerTestToken),
+		"POST /api/protected", // endpoint
+		apiConfig.JWTAuth(apiConfig.JWTSecret)( // middleware
+			http.HandlerFunc(apiConfig.HandlerTestToken), // handler
 		),
 	)
 

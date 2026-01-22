@@ -11,6 +11,16 @@ import (
 	"github.com/google/uuid"
 )
 
+type DairyMovie struct {
+	ID          uuid.UUID
+	MovieID     int32
+	UserID      uuid.UUID
+	WatchedAt   time.Time
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+	IsRewatched bool
+}
+
 type MovieReview struct {
 	ID        uuid.UUID
 	MovieID   int32
