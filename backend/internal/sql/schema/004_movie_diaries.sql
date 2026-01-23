@@ -5,9 +5,7 @@ CREATE TABLE movie_diaries (
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   watched_at TIMESTAMP NOT NULL,
   created_at TIMESTAMP NOT NULL,
-  updated_at TIMESTAMP NOT NULL,
-  is_rewatched BOOLEAN NOT NULL DEFAULT FALSE,
-  CONSTRAINT unique_user_dairy UNIQUE (user_id, movie_id)
+  updated_at TIMESTAMP NOT NULL
 );
 
 -- +goose Down

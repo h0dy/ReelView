@@ -67,22 +67,24 @@ func main() {
 	mux.HandleFunc("GET /api/healthz", apiConfig.HandlerReadiness)
 	mux.HandleFunc("POST /admin/reset", apiConfig.HandlerReset)
 
+	// user/auth
 	mux.HandleFunc("POST /api/users", apiConfig.HandlerCreateUser)
 	mux.HandleFunc("POST /api/login", apiConfig.HandlerUserLogin)
-
 	mux.HandleFunc("POST /api/refresh", apiConfig.HandlerRefreshToken)
 
+	// movies
 	mux.HandleFunc("GET /api/movies", apiConfig.HandlerGetMovies)
 	mux.HandleFunc("GET /api/movies/{movieId}", apiConfig.HandlerGetMovieDetails)
 
+	// reviews
 	mux.HandleFunc("GET /api/reviews/{reviewId}", apiConfig.HandlerGetSingleMovieReview)
+	mux.HandleFunc("GET /api/movies/{movieId}/reviews", apiConfig.HandlerGetMovieReviews)
 	mux.Handle(
 		"DELETE /api/reviews/{reviewId}",
 		apiConfig.JWTAuth(apiConfig.JWTSecret)(
 			http.HandlerFunc(apiConfig.HandlerDeleteMovieReview),
 		),
 	)
-	mux.HandleFunc("GET /api/movies/{movieId}/reviews", apiConfig.HandlerGetMovieReviews)
 	mux.Handle(
 		"POST /api/movies/{movieId}/reviews",
 		apiConfig.JWTAuth(apiConfig.JWTSecret)(
@@ -96,6 +98,7 @@ func main() {
 		),
 	)
 
+	// dairy
 	mux.Handle(
 		"POST /api/dairy/movies",
 		apiConfig.JWTAuth(apiConfig.JWTSecret)(

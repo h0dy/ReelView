@@ -10,9 +10,8 @@ import (
 
 func (cfg *APIConfig) HandlerCreateMovieDiary(w http.ResponseWriter, r *http.Request) {
 	type reqBody struct {
-		MovieID     int    `json:"movie_id"`
-		WatchedAt   string `json:"watched_at"`
-		IsRewatched bool   `json:"is_rewatched"`
+		MovieID   int    `json:"movie_id"`
+		WatchedAt string `json:"watched_at"`
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -47,10 +46,9 @@ func (cfg *APIConfig) HandlerCreateMovieDiary(w http.ResponseWriter, r *http.Req
 	user := r.Context().Value(UserContextKey).(*AuthUser)
 
 	dairy, err := cfg.DB.CreateMovieDiary(r.Context(), database.CreateMovieDiaryParams{
-		MovieID:     int32(body.MovieID),
-		UserID:      user.ID,
-		WatchedAt:   watchedAt,
-		IsRewatched: body.IsRewatched,
+		MovieID:   int32(body.MovieID),
+		UserID:    user.ID,
+		WatchedAt: watchedAt,
 	})
 	if err != nil {
 		respondWithErr(w,

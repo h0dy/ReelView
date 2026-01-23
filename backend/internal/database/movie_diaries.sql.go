@@ -13,25 +13,19 @@ import (
 )
 
 const createMovieDiary = `-- name: CreateMovieDiary :one
-INSERT INTO movie_diaries(id, movie_id, user_id, watched_at, is_rewatched, created_at, updated_at)
-VALUES (gen_random_uuid(), $1, $2, $3, $4, NOW(), NOW())
-RETURNING id, movie_id, user_id, watched_at, created_at, updated_at, is_rewatched
+INSERT INTO movie_diaries(id, movie_id, user_id, watched_at, created_at, updated_at)
+VALUES (gen_random_uuid(), $1, $2, $3, NOW(), NOW())
+RETURNING id, movie_id, user_id, watched_at, created_at, updated_at
 `
 
 type CreateMovieDiaryParams struct {
-	MovieID     int32
-	UserID      uuid.UUID
-	WatchedAt   time.Time
-	IsRewatched bool
+	MovieID   int32
+	UserID    uuid.UUID
+	WatchedAt time.Time
 }
 
 func (q *Queries) CreateMovieDiary(ctx context.Context, arg CreateMovieDiaryParams) (MovieDiary, error) {
-	row := q.db.QueryRowContext(ctx, createMovieDiary,
-		arg.MovieID,
-		arg.UserID,
-		arg.WatchedAt,
-		arg.IsRewatched,
-	)
+	row := q.db.QueryRowContext(ctx, createMovieDiary, arg.MovieID, arg.UserID, arg.WatchedAt)
 	var i MovieDiary
 	err := row.Scan(
 		&i.ID,
@@ -40,7 +34,6 @@ func (q *Queries) CreateMovieDiary(ctx context.Context, arg CreateMovieDiaryPara
 		&i.WatchedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.IsRewatched,
 	)
 	return i, err
 }
@@ -61,44 +54,88 @@ func (q *Queries) DeleteMovieDiary(ctx context.Context, arg DeleteMovieDiaryPara
 	return err
 }
 
-const getMovieDiary = `-- name: GetMovieDiary :one
+const getMovieDiaries = `-- name: GetMovieDiaries :many
 SELECT FROM movie_diaries
   WHERE user_id = $1
   AND movie_id = $2
 `
 
-type GetMovieDiaryParams struct {
+type GetMovieDiariesParams struct {
 	UserID  uuid.UUID
 	MovieID int32
 }
 
-type GetMovieDiaryRow struct {
+type GetMovieDiariesRow struct {
 }
 
-func (q *Queries) GetMovieDiary(ctx context.Context, arg GetMovieDiaryParams) (GetMovieDiaryRow, error) {
-	row := q.db.QueryRowContext(ctx, getMovieDiary, arg.UserID, arg.MovieID)
-	var i GetMovieDiaryRow
-	err := row.Scan()
-	return i, err
+func (q *Queries) GetMovieDiaries(ctx context.Context, arg GetMovieDiariesParams) ([]GetMovieDiariesRow, error) {
+	rows, err := q.db.QueryContext(ctx, getMovieDiaries, arg.UserID, arg.MovieID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetMovieDiariesRow
+	for rows.Next() {
+		var i GetMovieDiariesRow
+		if err := rows.Scan(); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUserDiaries = `-- name: GetUserDiaries :many
+SELECT FROM movie_diaries WHERE user_id = $1
+`
+
+type GetUserDiariesRow struct {
+}
+
+func (q *Queries) GetUserDiaries(ctx context.Context, userID uuid.UUID) ([]GetUserDiariesRow, error) {
+	rows, err := q.db.QueryContext(ctx, getUserDiaries, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetUserDiariesRow
+	for rows.Next() {
+		var i GetUserDiariesRow
+		if err := rows.Scan(); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const updateMovieDiary = `-- name: UpdateMovieDiary :one
 UPDATE movie_diaries
 SET watched_at = $1,
-  is_rewatched = $2,
   updated_at = NOW()
-WHERE user_id = $3
-RETURNING id, movie_id, user_id, watched_at, created_at, updated_at, is_rewatched
+WHERE user_id = $2
+RETURNING id, movie_id, user_id, watched_at, created_at, updated_at
 `
 
 type UpdateMovieDiaryParams struct {
-	WatchedAt   time.Time
-	IsRewatched bool
-	UserID      uuid.UUID
+	WatchedAt time.Time
+	UserID    uuid.UUID
 }
 
 func (q *Queries) UpdateMovieDiary(ctx context.Context, arg UpdateMovieDiaryParams) (MovieDiary, error) {
-	row := q.db.QueryRowContext(ctx, updateMovieDiary, arg.WatchedAt, arg.IsRewatched, arg.UserID)
+	row := q.db.QueryRowContext(ctx, updateMovieDiary, arg.WatchedAt, arg.UserID)
 	var i MovieDiary
 	err := row.Scan(
 		&i.ID,
@@ -107,7 +144,6 @@ func (q *Queries) UpdateMovieDiary(ctx context.Context, arg UpdateMovieDiaryPara
 		&i.WatchedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.IsRewatched,
 	)
 	return i, err
 }

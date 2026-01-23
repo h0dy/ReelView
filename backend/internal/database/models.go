@@ -12,13 +12,12 @@ import (
 )
 
 type MovieDiary struct {
-	ID          uuid.UUID
-	MovieID     int32
-	UserID      uuid.UUID
-	WatchedAt   time.Time
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-	IsRewatched bool
+	ID        uuid.UUID
+	MovieID   int32
+	UserID    uuid.UUID
+	WatchedAt time.Time
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 type MovieReview struct {
