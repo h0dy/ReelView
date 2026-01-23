@@ -80,17 +80,26 @@ func (cfg *APIConfig) HandlerCreateMovieReview(w http.ResponseWriter, r *http.Re
 }
 
 func (cfg *APIConfig) HandlerDeleteMovieReview(w http.ResponseWriter, r *http.Request) {
-	movieId, _ := strconv.ParseInt(r.PathValue("movieId"), 10, 32)
 	reviewId, err := uuid.Parse(r.PathValue("reviewId"))
 	if err != nil {
 		respondWithErr(w, http.StatusBadRequest, "invalid review id", err)
 		return
 	}
-	if err := cfg.DB.DeleteReview(r.Context(), database.DeleteReviewParams{
-		ID:      reviewId,
-		MovieID: int32(movieId),
-	}); err != nil {
-		respondWithErr(w, http.StatusNotFound, "review not found", err)
+
+	user := r.Context().Value(UserContextKey).(*AuthUser)
+
+	review, err := cfg.DB.GetSingleMovieReview(r.Context(), reviewId)
+	if err != nil {
+		respondWithErr(w, http.StatusNotFound, "couldn't find review", err)
+		return
+	}
+	if review.UserID != user.ID {
+		respondWithErr(w, http.StatusUnauthorized, "unauthorized", nil)
+		return
+	}
+
+	if err := cfg.DB.DeleteReview(r.Context(), reviewId); err != nil {
+		respondWithErr(w, http.StatusInternalServerError, "something went wrong", err)
 		return
 	}
 	respondWithJson(w, http.StatusNoContent, struct{}{})
@@ -121,7 +130,7 @@ func (cfg *APIConfig) HandlerUpdateMovieReview(w http.ResponseWriter, r *http.Re
 		respondWithErr(w,
 			http.StatusNotFound,
 			"Couldn't find review",
-			 err)
+			err)
 		return
 	}
 
@@ -140,4 +149,28 @@ func (cfg *APIConfig) HandlerUpdateMovieReview(w http.ResponseWriter, r *http.Re
 	}
 
 	respondWithJson(w, http.StatusOK, updatedReview)
+}
+
+func (cfg *APIConfig) HandlerGetMovieReviews(w http.ResponseWriter, r *http.Request) {
+	movieId, _ := strconv.Atoi(r.PathValue("movieId"))
+	reviews, err := cfg.DB.GetMovieReviews(r.Context(), int32(movieId))
+	if err != nil {
+		return
+	}
+	respondWithJson(w, http.StatusOK, reviews)
+}
+
+func (cfg *APIConfig) HandlerGetSingleMovieReview(w http.ResponseWriter, r *http.Request) {
+	reviewId, err := uuid.Parse(r.PathValue("reviewId"))
+	if err != nil {
+		respondWithErr(w, http.StatusBadRequest, "invalid review id", err)
+		return
+	}
+	review, err := cfg.DB.GetSingleMovieReview(r.Context(), reviewId)
+	if err != nil {
+		respondWithErr(w, http.StatusInternalServerError, "something went wrong", err)
+		return
+	}
+
+	respondWithJson(w, http.StatusOK, review)
 }

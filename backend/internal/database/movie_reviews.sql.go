@@ -48,16 +48,11 @@ func (q *Queries) CreateMovieReview(ctx context.Context, arg CreateMovieReviewPa
 }
 
 const deleteReview = `-- name: DeleteReview :exec
-DELETE FROM movie_reviews WHERE id = $1 AND movie_id = $2
+DELETE FROM movie_reviews WHERE id = $1
 `
 
-type DeleteReviewParams struct {
-	ID      uuid.UUID
-	MovieID int32
-}
-
-func (q *Queries) DeleteReview(ctx context.Context, arg DeleteReviewParams) error {
-	_, err := q.db.ExecContext(ctx, deleteReview, arg.ID, arg.MovieID)
+func (q *Queries) DeleteReview(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteReview, id)
 	return err
 }
 

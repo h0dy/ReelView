@@ -75,16 +75,18 @@ func main() {
 	mux.HandleFunc("GET /api/movies", apiConfig.HandlerGetMovies)
 	mux.HandleFunc("GET /api/movies/{movieId}", apiConfig.HandlerGetMovieDetails)
 
+	mux.HandleFunc("GET /api/reviews/{reviewId}", apiConfig.HandlerGetSingleMovieReview)
+	mux.Handle(
+		"DELETE /api/reviews/{reviewId}",
+		apiConfig.JWTAuth(apiConfig.JWTSecret)(
+			http.HandlerFunc(apiConfig.HandlerDeleteMovieReview),
+		),
+	)
+	mux.HandleFunc("GET /api/movies/{movieId}/reviews", apiConfig.HandlerGetMovieReviews)
 	mux.Handle(
 		"POST /api/movies/{movieId}/reviews",
 		apiConfig.JWTAuth(apiConfig.JWTSecret)(
 			http.HandlerFunc(apiConfig.HandlerCreateMovieReview),
-		),
-	)
-	mux.Handle(
-		"DELETE /api/movies/{movieId}/reviews/{reviewId}",
-		apiConfig.JWTAuth(apiConfig.JWTSecret)(
-			http.HandlerFunc(apiConfig.HandlerDeleteMovieReview),
 		),
 	)
 	mux.Handle(
