@@ -27,12 +27,13 @@ func (cfg *APIConfig) HandlerCreateMovieReview(w http.ResponseWriter, r *http.Re
 
 	review := reqBody{}
 	if err := json.NewDecoder(r.Body).Decode(&review); err != nil {
-		respondWithErr(w, http.StatusBadRequest, "invalid field type", err)
+		respondWithErr(w, http.StatusBadRequest, "invalid type", err)
 		return
 	}
 
 	if review.Body == "" && review.Rating == 0 {
-		respondWithErr(w, http.StatusBadRequest, "please provide a rating or review", nil)
+		respondWithErr(w, http.StatusBadRequest, "please provide a rating (1 - 10) or review field", nil)
+		return
 	}
 
 	user := r.Context().Value(UserContextKey).(*AuthUser)
@@ -93,4 +94,50 @@ func (cfg *APIConfig) HandlerDeleteMovieReview(w http.ResponseWriter, r *http.Re
 		return
 	}
 	respondWithJson(w, http.StatusNoContent, struct{}{})
+}
+
+func (cfg *APIConfig) HandlerUpdateMovieReview(w http.ResponseWriter, r *http.Request) {
+	type reqBody struct {
+		Body      string  `json:"Body"`
+		Rating    float32 `json:"rating"`
+		IsSpoiler bool    `json:"is_spoiler"`
+	}
+
+	reviewId, err := uuid.Parse(r.PathValue("reviewId"))
+	if err != nil {
+		respondWithErr(w, http.StatusBadRequest, "invalid review id", err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	defer r.Body.Close()
+
+	review := reqBody{}
+	if err := json.NewDecoder(r.Body).Decode(&review); err != nil {
+		respondWithErr(w, http.StatusBadRequest, "invalid type", err)
+		return
+	}
+
+	if _, err := cfg.DB.GetSingleMovieReview(r.Context(), reviewId); err != nil {
+		respondWithErr(w,
+			http.StatusNotFound,
+			"Couldn't find review",
+			 err)
+		return
+	}
+
+	updatedReview, err := cfg.DB.UpdateMovieReview(r.Context(), database.UpdateMovieReviewParams{
+		Review:    review.Body,
+		IsSpoiler: review.IsSpoiler,
+		Rating:    review.Rating,
+		ID:        reviewId,
+	})
+	if err != nil {
+		respondWithErr(w,
+			http.StatusInternalServerError,
+			"something went wrong",
+			err)
+		return
+	}
+
+	respondWithJson(w, http.StatusOK, updatedReview)
 }

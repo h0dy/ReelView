@@ -97,3 +97,97 @@ func (q *Queries) GetMovieReviews(ctx context.Context, movieID int32) ([]MovieRe
 	}
 	return items, nil
 }
+
+const getSingleMovieReview = `-- name: GetSingleMovieReview :one
+SELECT id, movie_id, user_id, review, rating, is_spoiler, created_at, updated_at FROM movie_reviews WHERE id = $1
+`
+
+func (q *Queries) GetSingleMovieReview(ctx context.Context, id uuid.UUID) (MovieReview, error) {
+	row := q.db.QueryRowContext(ctx, getSingleMovieReview, id)
+	var i MovieReview
+	err := row.Scan(
+		&i.ID,
+		&i.MovieID,
+		&i.UserID,
+		&i.Review,
+		&i.Rating,
+		&i.IsSpoiler,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getUserReviews = `-- name: GetUserReviews :many
+SELECT id, movie_id, user_id, review, rating, is_spoiler, created_at, updated_at FROM movie_reviews WHERE user_id = $1
+`
+
+func (q *Queries) GetUserReviews(ctx context.Context, userID uuid.UUID) ([]MovieReview, error) {
+	rows, err := q.db.QueryContext(ctx, getUserReviews, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []MovieReview
+	for rows.Next() {
+		var i MovieReview
+		if err := rows.Scan(
+			&i.ID,
+			&i.MovieID,
+			&i.UserID,
+			&i.Review,
+			&i.Rating,
+			&i.IsSpoiler,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const updateMovieReview = `-- name: UpdateMovieReview :one
+UPDATE movie_reviews
+SET review = $1,
+  is_spoiler = $2,
+  rating = $3,
+  updated_at = NOW()
+WHERE id = $4
+RETURNING id, movie_id, user_id, review, rating, is_spoiler, created_at, updated_at
+`
+
+type UpdateMovieReviewParams struct {
+	Review    string
+	IsSpoiler bool
+	Rating    float32
+	ID        uuid.UUID
+}
+
+func (q *Queries) UpdateMovieReview(ctx context.Context, arg UpdateMovieReviewParams) (MovieReview, error) {
+	row := q.db.QueryRowContext(ctx, updateMovieReview,
+		arg.Review,
+		arg.IsSpoiler,
+		arg.Rating,
+		arg.ID,
+	)
+	var i MovieReview
+	err := row.Scan(
+		&i.ID,
+		&i.MovieID,
+		&i.UserID,
+		&i.Review,
+		&i.Rating,
+		&i.IsSpoiler,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}

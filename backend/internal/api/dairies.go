@@ -20,7 +20,7 @@ func (cfg *APIConfig) HandlerCreateMovieDiary(w http.ResponseWriter, r *http.Req
 
 	body := reqBody{}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		respondWithErr(w, http.StatusBadRequest, "invalid field type", err)
+		respondWithErr(w, http.StatusBadRequest, "invalid type", err)
 		return
 	}
 	if body.MovieID == 0 {

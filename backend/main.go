@@ -87,6 +87,12 @@ func main() {
 			http.HandlerFunc(apiConfig.HandlerDeleteMovieReview),
 		),
 	)
+	mux.Handle(
+		"PUT /api/movies/{movieId}/reviews/{reviewId}",
+		apiConfig.JWTAuth(apiConfig.JWTSecret)(
+			http.HandlerFunc(apiConfig.HandlerUpdateMovieReview),
+		),
+	)
 
 	mux.Handle(
 		"POST /api/dairy/movies",

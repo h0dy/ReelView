@@ -9,3 +9,18 @@ SELECT * FROM movie_reviews
 
 -- name: DeleteReview :exec
 DELETE FROM movie_reviews WHERE id = $1 AND movie_id = $2;
+
+-- name: GetSingleMovieReview :one
+SELECT * FROM movie_reviews WHERE id = $1;
+
+-- name: UpdateMovieReview :one
+UPDATE movie_reviews
+SET review = $1,
+  is_spoiler = $2,
+  rating = $3,
+  updated_at = NOW()
+WHERE id = $4
+RETURNING *;
+
+-- name: GetUserReviews :many
+SELECT * FROM movie_reviews WHERE user_id = $1;
