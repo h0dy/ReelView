@@ -45,7 +45,7 @@ func (cfg *APIConfig) HandlerCreateMovieDiary(w http.ResponseWriter, r *http.Req
 
 	user := r.Context().Value(UserContextKey).(*AuthUser)
 
-	dairy, err := cfg.DB.CreateMovieDiary(r.Context(), database.CreateMovieDiaryParams{
+	diary, err := cfg.DB.CreateMovieDiary(r.Context(), database.CreateMovieDiaryParams{
 		MovieID:   int32(body.MovieID),
 		UserID:    user.ID,
 		WatchedAt: watchedAt,
@@ -58,5 +58,5 @@ func (cfg *APIConfig) HandlerCreateMovieDiary(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	respondWithJson(w, http.StatusCreated, dairy)
+	respondWithJson(w, http.StatusCreated, diary)
 }

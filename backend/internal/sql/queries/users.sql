@@ -11,3 +11,9 @@ SELECT * FROM users WHERE email = $1;
 
 -- name: GetUserByID :one
 SELECT * FROM users WHERE id = $1;
+
+-- name: UpdateUser :one 
+UPDATE users
+SET email = $1, username = $2, is_premium = $3, updated_at = NOW() 
+WHERE id = $4
+RETURNING *;

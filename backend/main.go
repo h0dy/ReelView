@@ -67,8 +67,17 @@ func main() {
 	mux.HandleFunc("GET /api/healthz", apiConfig.HandlerReadiness)
 	mux.HandleFunc("POST /admin/reset", apiConfig.HandlerReset)
 
-	// user/auth
+	// user
 	mux.HandleFunc("POST /api/users", apiConfig.HandlerCreateUser)
+	mux.HandleFunc("GET /api/users/{userId}", apiConfig.HandlerGetUser)
+	mux.Handle(
+		"PUT /api/users",
+		apiConfig.JWTAuth(apiConfig.JWTSecret)(
+			http.HandlerFunc(apiConfig.HandlerUpdateUser),
+		),
+	)
+
+	// auth
 	mux.HandleFunc("POST /api/login", apiConfig.HandlerUserLogin)
 	mux.HandleFunc("POST /api/refresh", apiConfig.HandlerRefreshToken)
 
@@ -98,9 +107,9 @@ func main() {
 		),
 	)
 
-	// dairy
+	// diary
 	mux.Handle(
-		"POST /api/dairy/movies",
+		"POST /api/diary",
 		apiConfig.JWTAuth(apiConfig.JWTSecret)(
 			http.HandlerFunc(apiConfig.HandlerCreateMovieDiary),
 		),

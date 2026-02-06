@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -20,6 +19,28 @@ type AuthUser struct { // User strut to hold json response
 	IsPremium bool      `json:"is_premium"`
 }
 
+func (cfg *APIConfig) HandlerGetUser(w http.ResponseWriter, r *http.Request) {
+	userId, err := uuid.Parse(r.PathValue("userId"))
+	if err != nil {
+		respondWithErr(w, http.StatusBadRequest, "invalid user id", err)
+		return
+	}
+
+	user, err := cfg.DB.GetUserByID(r.Context(), userId)
+	if err != nil {
+		respondWithErr(w, http.StatusNotFound, "couldn't find user", err)
+		return
+	}
+
+	respondWithJson(w, http.StatusCreated, AuthUser{
+		ID:        user.ID,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+		Email:     user.Email,
+		IsPremium: user.IsPremium,
+	})
+}
+
 func (cfg *APIConfig) HandlerCreateUser(w http.ResponseWriter, r *http.Request) {
 	type reqBody struct {
 		Email    string `json:"email"`
@@ -33,7 +54,7 @@ func (cfg *APIConfig) HandlerCreateUser(w http.ResponseWriter, r *http.Request) 
 	params := reqBody{}
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&params); err != nil {
-		respondWithErr(w, http.StatusBadRequest, "Internal server error", err)
+		respondWithErr(w, http.StatusBadRequest, "Invalid data", err)
 		return
 	}
 
@@ -78,89 +99,39 @@ func (cfg *APIConfig) HandlerCreateUser(w http.ResponseWriter, r *http.Request) 
 	})
 }
 
-func (cfg *APIConfig) HandlerUserLogin(w http.ResponseWriter, r *http.Request) {
+func (cfg *APIConfig) HandlerUpdateUser(w http.ResponseWriter, r *http.Request) {
 	type reqBody struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
-	type response struct {
-		User  AuthUser `json:"user"`
-		Token string   `json:"token"`
+		Email     string `json:"email"`
+		Username  string `json:"username"`
+		IsPremium bool   `json:"is_premium"`
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	defer r.Body.Close()
 
-	data := reqBody{}
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&data); err != nil {
-		respondWithErr(w, http.StatusInternalServerError, "Couldn't decode the json data", err)
-	}
-
-	user, err := cfg.DB.GetUserByEmail(r.Context(), data.Email)
-	if err != nil {
-		respondWithErr(w, http.StatusBadRequest, "Incorrect credential", err)
-		return
-	}
-	if err := auth.CheckPasswordHash(data.Password, user.HashedPassword); err != nil {
-		respondWithErr(w, http.StatusUnauthorized, "Incorrect credential", err)
+	body := reqBody{}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		respondWithErr(w, http.StatusBadRequest, "Invalid data", err)
 		return
 	}
 
-	accessToken, err := auth.MakeJWT(user.ID, cfg.JWTSecret, time.Minute*10)
-	if err != nil {
-		respondWithErr(w, http.StatusInternalServerError, "Couldn't create access token", err)
-		return
-	}
-
-	refreshToken := auth.MarkRefreshToken()
-	_, err = cfg.DB.CreateRefreshToken(r.Context(), database.CreateRefreshTokenParams{
-		Token:     refreshToken,
-		UserID:    user.ID,
-		ExpiresAt: time.Now().UTC().Add(time.Hour * 24 * 60),
+	user := r.Context().Value(UserContextKey).(*AuthUser)
+	updatedUser, err := cfg.DB.UpdateUser(r.Context(), database.UpdateUserParams{
+		ID:        user.ID,
+		Email:     body.Email,
+		Username:  body.Username,
+		IsPremium: body.IsPremium,
 	})
 	if err != nil {
-		respondWithErr(w, http.StatusInternalServerError, "Couldn't create access JWT", err)
+		respondWithErr(w, http.StatusBadRequest, "username or email is already used", err)
 		return
 	}
 
-	http.SetCookie(w, &http.Cookie{
-		Name:     "refresh_token",
-		Value:    refreshToken,
-		HttpOnly: true,
-		Secure:   cfg.Platform != "dev",
-		SameSite: http.SameSiteStrictMode,
-		Path:     "/api/refresh",
-		MaxAge:   60 * 24 * 60 * 60, // 60 days
-	})
-
-	respondWithJson(w, http.StatusOK, response{
-		User: AuthUser{
-			ID:        user.ID,
-			CreatedAt: user.CreatedAt,
-			UpdatedAt: user.UpdatedAt,
-			Email:     user.Email,
-			IsPremium: user.IsPremium,
-		},
-		Token: accessToken,
-	})
-}
-
-func (cfg *APIConfig) HandlerTestToken(w http.ResponseWriter, r *http.Request) {
-	type response struct {
-		Message string `json:"message"`
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	defer r.Body.Close()
-
-	user, ok := r.Context().Value(UserContextKey).(*AuthUser)
-	if !ok {
-		respondWithErr(w, http.StatusUnauthorized, "Unauthorized", nil)
-		return
-	}
-
-	respondWithJson(w, http.StatusOK, response{
-		Message: fmt.Sprintf("welcome back, your user id is: %s", user.ID.String()),
+	respondWithJson(w, http.StatusOK, AuthUser{
+		ID:        updatedUser.ID,
+		CreatedAt: updatedUser.CreatedAt,
+		UpdatedAt: updatedUser.UpdatedAt,
+		Email:     updatedUser.Email,
+		IsPremium: updatedUser.IsPremium,
 	})
 }
