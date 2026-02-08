@@ -10,7 +10,7 @@ import (
 	"github.com/h0dy/ReelView/backend/internal/database"
 )
 
-func (cfg *APIConfig) HandlerCreateMovieReview(w http.ResponseWriter, r *http.Request) {
+func (cfg *APIConfig) HandlerCreateReview(w http.ResponseWriter, r *http.Request) {
 	type reqBody struct {
 		Body      string  `json:"Body"`
 		Rating    float32 `json:"rating"`
@@ -79,7 +79,7 @@ func (cfg *APIConfig) HandlerCreateMovieReview(w http.ResponseWriter, r *http.Re
 	})
 }
 
-func (cfg *APIConfig) HandlerDeleteMovieReview(w http.ResponseWriter, r *http.Request) {
+func (cfg *APIConfig) HandlerDeleteReview(w http.ResponseWriter, r *http.Request) {
 	reviewId, err := uuid.Parse(r.PathValue("reviewId"))
 	if err != nil {
 		respondWithErr(w, http.StatusBadRequest, "invalid review id", err)
@@ -105,7 +105,7 @@ func (cfg *APIConfig) HandlerDeleteMovieReview(w http.ResponseWriter, r *http.Re
 	respondWithJson(w, http.StatusNoContent, struct{}{})
 }
 
-func (cfg *APIConfig) HandlerUpdateMovieReview(w http.ResponseWriter, r *http.Request) {
+func (cfg *APIConfig) HandlerUpdateReview(w http.ResponseWriter, r *http.Request) {
 	type reqBody struct {
 		Body      string  `json:"Body"`
 		Rating    float32 `json:"rating"`
@@ -125,12 +125,17 @@ func (cfg *APIConfig) HandlerUpdateMovieReview(w http.ResponseWriter, r *http.Re
 		respondWithErr(w, http.StatusBadRequest, "invalid type", err)
 		return
 	}
-
-	if _, err := cfg.DB.GetSingleMovieReview(r.Context(), reviewId); err != nil {
+	currentReview, err := cfg.DB.GetSingleMovieReview(r.Context(), reviewId)
+	if err != nil {
 		respondWithErr(w,
 			http.StatusNotFound,
 			"Couldn't find review",
 			err)
+		return
+	}
+	authUser := r.Context().Value(UserContextKey).(*AuthUser)
+	if currentReview.UserID != authUser.ID {
+		respondWithErr(w, http.StatusUnauthorized, "Unauthorized", nil)
 		return
 	}
 
@@ -160,7 +165,7 @@ func (cfg *APIConfig) HandlerGetMovieReviews(w http.ResponseWriter, r *http.Requ
 	respondWithJson(w, http.StatusOK, reviews)
 }
 
-func (cfg *APIConfig) HandlerGetSingleMovieReview(w http.ResponseWriter, r *http.Request) {
+func (cfg *APIConfig) HandlerGetSingleReview(w http.ResponseWriter, r *http.Request) {
 	reviewId, err := uuid.Parse(r.PathValue("reviewId"))
 	if err != nil {
 		respondWithErr(w, http.StatusBadRequest, "invalid review id", err)
@@ -168,7 +173,7 @@ func (cfg *APIConfig) HandlerGetSingleMovieReview(w http.ResponseWriter, r *http
 	}
 	review, err := cfg.DB.GetSingleMovieReview(r.Context(), reviewId)
 	if err != nil {
-		respondWithErr(w, http.StatusInternalServerError, "something went wrong", err)
+		respondWithErr(w, http.StatusNotFound, "Couldn't find review", err)
 		return
 	}
 

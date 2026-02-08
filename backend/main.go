@@ -71,7 +71,7 @@ func main() {
 	mux.HandleFunc("POST /api/users", apiConfig.HandlerCreateUser)
 	mux.HandleFunc("GET /api/users/{userId}", apiConfig.HandlerGetUser)
 	mux.Handle(
-		"PUT /api/users",
+		"PUT /api/users/me",
 		apiConfig.JWTAuth(apiConfig.JWTSecret)(
 			http.HandlerFunc(apiConfig.HandlerUpdateUser),
 		),
@@ -86,30 +86,30 @@ func main() {
 	mux.HandleFunc("GET /api/movies/{movieId}", apiConfig.HandlerGetMovieDetails)
 
 	// reviews
-	mux.HandleFunc("GET /api/reviews/{reviewId}", apiConfig.HandlerGetSingleMovieReview)
+	mux.HandleFunc("GET /api/reviews/{reviewId}", apiConfig.HandlerGetSingleReview)
 	mux.HandleFunc("GET /api/movies/{movieId}/reviews", apiConfig.HandlerGetMovieReviews)
-	mux.Handle(
-		"DELETE /api/reviews/{reviewId}",
-		apiConfig.JWTAuth(apiConfig.JWTSecret)(
-			http.HandlerFunc(apiConfig.HandlerDeleteMovieReview),
-		),
-	)
 	mux.Handle(
 		"POST /api/movies/{movieId}/reviews",
 		apiConfig.JWTAuth(apiConfig.JWTSecret)(
-			http.HandlerFunc(apiConfig.HandlerCreateMovieReview),
+			http.HandlerFunc(apiConfig.HandlerCreateReview),
 		),
 	)
 	mux.Handle(
-		"PUT /api/movies/{movieId}/reviews/{reviewId}",
+		"PUT /api/reviews/{reviewId}",
 		apiConfig.JWTAuth(apiConfig.JWTSecret)(
-			http.HandlerFunc(apiConfig.HandlerUpdateMovieReview),
+			http.HandlerFunc(apiConfig.HandlerUpdateReview),
+		),
+	)
+	mux.Handle(
+		"DELETE /api/reviews/{reviewId}",
+		apiConfig.JWTAuth(apiConfig.JWTSecret)(
+			http.HandlerFunc(apiConfig.HandlerDeleteReview),
 		),
 	)
 
 	// diary
 	mux.Handle(
-		"POST /api/diary",
+		"POST /api/movies/{movieId}/diaries",
 		apiConfig.JWTAuth(apiConfig.JWTSecret)(
 			http.HandlerFunc(apiConfig.HandlerCreateMovieDiary),
 		),

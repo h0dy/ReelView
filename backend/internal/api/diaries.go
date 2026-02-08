@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/h0dy/ReelView/backend/internal/database"
@@ -10,8 +11,12 @@ import (
 
 func (cfg *APIConfig) HandlerCreateMovieDiary(w http.ResponseWriter, r *http.Request) {
 	type reqBody struct {
-		MovieID   int    `json:"movie_id"`
 		WatchedAt string `json:"watched_at"`
+	}
+	movieId, err := strconv.Atoi(r.PathValue("movieId"))
+	if err != nil {
+		respondWithErr(w, http.StatusInternalServerError, "invalid movieId", err)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -20,13 +25,6 @@ func (cfg *APIConfig) HandlerCreateMovieDiary(w http.ResponseWriter, r *http.Req
 	body := reqBody{}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		respondWithErr(w, http.StatusBadRequest, "invalid type", err)
-		return
-	}
-	if body.MovieID == 0 {
-		respondWithErr(w,
-			http.StatusBadRequest,
-			"missing movie_id field, please provide the movie_id",
-			nil)
 		return
 	}
 
@@ -46,7 +44,7 @@ func (cfg *APIConfig) HandlerCreateMovieDiary(w http.ResponseWriter, r *http.Req
 	user := r.Context().Value(UserContextKey).(*AuthUser)
 
 	diary, err := cfg.DB.CreateMovieDiary(r.Context(), database.CreateMovieDiaryParams{
-		MovieID:   int32(body.MovieID),
+		MovieID:   int32(movieId),
 		UserID:    user.ID,
 		WatchedAt: watchedAt,
 	})
