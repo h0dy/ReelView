@@ -6,8 +6,24 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/h0dy/ReelView/backend/internal/database"
 )
+
+func (cfg *APIConfig) HandlerGetDiary(w http.ResponseWriter, r *http.Request) {
+	diaryId, err := uuid.Parse(r.PathValue("diaryId"))
+	if err != nil {
+		respondWithErr(w, http.StatusBadRequest, "invalid diary id", err)
+		return
+	}
+
+	diary, err := cfg.DB.GetDiary(r.Context(), diaryId)
+	if err != nil {
+		respondWithErr(w, http.StatusNotFound, "couldn't find diary", err)
+		return
+	}
+	respondWithJson(w, http.StatusOK, diary)
+}
 
 func (cfg *APIConfig) HandlerCreateMovieDiary(w http.ResponseWriter, r *http.Request) {
 	type reqBody struct {
@@ -28,17 +44,17 @@ func (cfg *APIConfig) HandlerCreateMovieDiary(w http.ResponseWriter, r *http.Req
 		return
 	}
 
+	if body.WatchedAt == "" {
+		body.WatchedAt = time.Now().UTC().Format("2006-01-02")
+	}
 	watchedAt, err := time.Parse("2006-01-02", body.WatchedAt)
 	if err != nil {
-		if body.WatchedAt == "" {
-			body.WatchedAt = time.Now().UTC().Format("2006-01-02")
-		} else {
-			respondWithErr(w,
-				http.StatusBadRequest,
-				"invalid data formate, make sure to provide the correct data formate for watchedAt",
-				err)
-			return
-		}
+		respondWithErr(w,
+			http.StatusBadRequest,
+			"invalid data formate, make sure to provide the correct data formate for watchedAt",
+			err)
+		return
+
 	}
 
 	user := r.Context().Value(UserContextKey).(*AuthUser)

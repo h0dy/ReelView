@@ -15,10 +15,13 @@ DELETE FROM movie_diaries
   WHERE user_id = $1 
   AND movie_id = $2;
 
--- name: GetMovieDiaries :many
-SELECT FROM movie_diaries
+-- name: GetMovieDiariesForUser :many
+SELECT * FROM movie_diaries
   WHERE user_id = $1
   AND movie_id = $2;
 
 -- name: GetUserDiaries :many
-SELECT FROM movie_diaries WHERE user_id = $1;
+SELECT * FROM movie_diaries WHERE user_id = $1;
+
+-- name: GetDiary :one
+SELECT * FROM movie_diaries WHERE id = $1;

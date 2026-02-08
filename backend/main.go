@@ -108,6 +108,7 @@ func main() {
 	)
 
 	// diary
+	mux.HandleFunc("GET /api/diaries/{diaryId}", apiConfig.HandlerGetDiary)
 	mux.Handle(
 		"POST /api/movies/{movieId}/diaries",
 		apiConfig.JWTAuth(apiConfig.JWTSecret)(

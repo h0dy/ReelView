@@ -54,30 +54,52 @@ func (q *Queries) DeleteMovieDiary(ctx context.Context, arg DeleteMovieDiaryPara
 	return err
 }
 
-const getMovieDiaries = `-- name: GetMovieDiaries :many
-SELECT FROM movie_diaries
+const getDiary = `-- name: GetDiary :one
+SELECT id, movie_id, user_id, watched_at, created_at, updated_at FROM movie_diaries WHERE id = $1
+`
+
+func (q *Queries) GetDiary(ctx context.Context, id uuid.UUID) (MovieDiary, error) {
+	row := q.db.QueryRowContext(ctx, getDiary, id)
+	var i MovieDiary
+	err := row.Scan(
+		&i.ID,
+		&i.MovieID,
+		&i.UserID,
+		&i.WatchedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getMovieDiariesForUser = `-- name: GetMovieDiariesForUser :many
+SELECT id, movie_id, user_id, watched_at, created_at, updated_at FROM movie_diaries
   WHERE user_id = $1
   AND movie_id = $2
 `
 
-type GetMovieDiariesParams struct {
+type GetMovieDiariesForUserParams struct {
 	UserID  uuid.UUID
 	MovieID int32
 }
 
-type GetMovieDiariesRow struct {
-}
-
-func (q *Queries) GetMovieDiaries(ctx context.Context, arg GetMovieDiariesParams) ([]GetMovieDiariesRow, error) {
-	rows, err := q.db.QueryContext(ctx, getMovieDiaries, arg.UserID, arg.MovieID)
+func (q *Queries) GetMovieDiariesForUser(ctx context.Context, arg GetMovieDiariesForUserParams) ([]MovieDiary, error) {
+	rows, err := q.db.QueryContext(ctx, getMovieDiariesForUser, arg.UserID, arg.MovieID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetMovieDiariesRow
+	var items []MovieDiary
 	for rows.Next() {
-		var i GetMovieDiariesRow
-		if err := rows.Scan(); err != nil {
+		var i MovieDiary
+		if err := rows.Scan(
+			&i.ID,
+			&i.MovieID,
+			&i.UserID,
+			&i.WatchedAt,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -92,22 +114,26 @@ func (q *Queries) GetMovieDiaries(ctx context.Context, arg GetMovieDiariesParams
 }
 
 const getUserDiaries = `-- name: GetUserDiaries :many
-SELECT FROM movie_diaries WHERE user_id = $1
+SELECT id, movie_id, user_id, watched_at, created_at, updated_at FROM movie_diaries WHERE user_id = $1
 `
 
-type GetUserDiariesRow struct {
-}
-
-func (q *Queries) GetUserDiaries(ctx context.Context, userID uuid.UUID) ([]GetUserDiariesRow, error) {
+func (q *Queries) GetUserDiaries(ctx context.Context, userID uuid.UUID) ([]MovieDiary, error) {
 	rows, err := q.db.QueryContext(ctx, getUserDiaries, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetUserDiariesRow
+	var items []MovieDiary
 	for rows.Next() {
-		var i GetUserDiariesRow
-		if err := rows.Scan(); err != nil {
+		var i MovieDiary
+		if err := rows.Scan(
+			&i.ID,
+			&i.MovieID,
+			&i.UserID,
+			&i.WatchedAt,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
