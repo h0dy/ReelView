@@ -186,3 +186,30 @@ func (cfg *APIConfig) HandlerDeleteDiary(w http.ResponseWriter, r *http.Request)
 	}
 	respondWithJson(w, http.StatusNoContent, nil)
 }
+
+func (cfg *APIConfig) HandlerGetUserDiaries(w http.ResponseWriter, r *http.Request) {
+	userId, err := uuid.Parse(r.PathValue("userId"))
+	if err != nil {
+		respondWithErr(w, http.StatusBadRequest, "invalid user id", err)
+		return
+	}
+	diaries, err := cfg.DB.GetUserDiaries(r.Context(), userId)
+	if err != nil {
+		respondWithErr(w, http.StatusNotFound, "couldn't find diaries for user", err)
+		return
+	}
+	diariesResponse := []DiaryResponse{}
+
+	for _, diary := range diaries {
+		diariesResponse = append(diariesResponse, DiaryResponse{
+			ID:        diary.ID,
+			MovieID:   diary.MovieID,
+			UserID:    diary.ID,
+			WatchedAt: diary.WatchedAt,
+			UpdatedAt: diary.UpdatedAt,
+			CreatedAt: diary.CreatedAt,
+		})
+	}
+
+	respondWithJson(w, http.StatusOK, diariesResponse)
+}

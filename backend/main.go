@@ -76,6 +76,7 @@ func main() {
 			http.HandlerFunc(apiConfig.HandlerUpdateUser),
 		),
 	)
+	mux.HandleFunc("GET /api/users/{userId}/diaries", apiConfig.HandlerGetUserDiaries)
 
 	// auth
 	mux.HandleFunc("POST /api/login", apiConfig.HandlerUserLogin)
