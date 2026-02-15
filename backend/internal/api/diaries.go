@@ -198,8 +198,10 @@ func (cfg *APIConfig) HandlerGetUserDiaries(w http.ResponseWriter, r *http.Reque
 		respondWithErr(w, http.StatusNotFound, "couldn't find diaries for user", err)
 		return
 	}
-	diariesResponse := []DiaryResponse{}
 
+	w.Header().Set("Content-Type", "application/json")
+
+	diariesResponse := []DiaryResponse{}
 	for _, diary := range diaries {
 		diariesResponse = append(diariesResponse, DiaryResponse{
 			ID:        diary.ID,

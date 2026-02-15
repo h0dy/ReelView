@@ -218,3 +218,35 @@ func (cfg *APIConfig) HandlerGetSingleReview(w http.ResponseWriter, r *http.Requ
 		UpdatedAt: review.UpdatedAt,
 	})
 }
+
+func (cfg *APIConfig) HandlerGetUserReviews(w http.ResponseWriter, r *http.Request) {
+	userId, err := uuid.Parse(r.PathValue("userId"))
+	if err != nil {
+		respondWithErr(w, http.StatusBadRequest, "invalid review id", err)
+		return
+	}
+
+	reviews, err := cfg.DB.GetUserReviews(r.Context(), userId)
+	if err != nil {
+		respondWithErr(w, http.StatusNotFound, "couldn't find reviews for user", err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	reviewsResponse := []MovieReviewResponse{}
+	for _, review := range reviews {
+		reviewsResponse = append(reviewsResponse, MovieReviewResponse{
+			ID:        review.ID,
+			MovieID:   review.MovieID,
+			UserID:    review.UserID,
+			Review:    review.Review,
+			Rating:    review.Rating,
+			IsSpoiler: review.IsSpoiler,
+			CreatedAt: review.CreatedAt,
+			UpdatedAt: review.UpdatedAt,
+		})
+	}
+
+	respondWithJson(w, http.StatusOK, reviewsResponse)
+}
