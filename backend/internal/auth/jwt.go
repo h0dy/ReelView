@@ -57,8 +57,8 @@ func ValidateJWT(tokenString, tokenSecret string) (uuid.UUID, error) {
 	return userId, nil
 }
 
-// MarkRefreshToken func returns a random 256-bit string
-func MarkRefreshToken() string {
+// MakeRefreshToken func returns a random 256-bit string
+func MakeRefreshToken() string {
 	key := make([]byte, 32)
 	rand.Read(key)
 	return hex.EncodeToString(key)

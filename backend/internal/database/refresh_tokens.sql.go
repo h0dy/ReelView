@@ -43,6 +43,20 @@ func (q *Queries) CreateRefreshToken(ctx context.Context, arg CreateRefreshToken
 	return i, err
 }
 
+const deleteRefreshToken = `-- name: DeleteRefreshToken :exec
+DELETE FROM refresh_tokens WHERE token = $1 AND user_id = $2
+`
+
+type DeleteRefreshTokenParams struct {
+	Token  string
+	UserID uuid.UUID
+}
+
+func (q *Queries) DeleteRefreshToken(ctx context.Context, arg DeleteRefreshTokenParams) error {
+	_, err := q.db.ExecContext(ctx, deleteRefreshToken, arg.Token, arg.UserID)
+	return err
+}
+
 const getUserFromRefreshToken = `-- name: GetUserFromRefreshToken :one
 SELECT users.id, users.created_at, users.updated_at, users.email, users.username, users.hashed_password, users.is_premium FROM users
 JOIN refresh_tokens ON users.id = refresh_tokens.user_id
@@ -75,25 +89,5 @@ WHERE token = $1
 
 func (q *Queries) SetRevokedAtToken(ctx context.Context, token string) error {
 	_, err := q.db.ExecContext(ctx, setRevokedAtToken, token)
-	return err
-}
-
-const updateRefreshToken = `-- name: UpdateRefreshToken :exec
-UPDATE refresh_tokens
-SET updated_at = NOW(),
-  token = $1,
-  expires_at = $2
-WHERE user_id = $3
-  AND revoked_at IS NULL
-`
-
-type UpdateRefreshTokenParams struct {
-	Token     string
-	ExpiresAt time.Time
-	UserID    uuid.UUID
-}
-
-func (q *Queries) UpdateRefreshToken(ctx context.Context, arg UpdateRefreshTokenParams) error {
-	_, err := q.db.ExecContext(ctx, updateRefreshToken, arg.Token, arg.ExpiresAt, arg.UserID)
 	return err
 }

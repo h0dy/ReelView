@@ -80,6 +80,12 @@ func main() {
 	// auth
 	mux.HandleFunc("POST /api/login", apiConfig.HandlerUserLogin)
 	mux.HandleFunc("POST /api/refresh", apiConfig.HandlerRefreshToken)
+	mux.Handle(
+		"POST /api/logout",
+		apiConfig.JWTAuth(apiConfig.JWTSecret)(
+			http.HandlerFunc(apiConfig.HandlerLogout),
+		),
+	)
 
 	// movies
 	mux.HandleFunc("GET /api/movies", apiConfig.HandlerGetMovies)

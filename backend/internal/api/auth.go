@@ -45,7 +45,7 @@ func (cfg *APIConfig) HandlerUserLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	refreshToken := auth.MarkRefreshToken()
+	refreshToken := auth.MakeRefreshToken()
 	_, err = cfg.DB.CreateRefreshToken(r.Context(), database.CreateRefreshTokenParams{
 		Token:     refreshToken,
 		UserID:    user.ID,
@@ -114,6 +114,7 @@ func (cfg *APIConfig) HandlerRefreshToken(w http.ResponseWriter, r *http.Request
 	user, err := cfg.DB.GetUserFromRefreshToken(r.Context(), refreshToken)
 	if err != nil {
 		respondWithErr(w, http.StatusUnauthorized, "Invalid or expired refresh token", err)
+		return
 	}
 
 	// new access token
@@ -123,25 +124,68 @@ func (cfg *APIConfig) HandlerRefreshToken(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// Issue a new refresh token and update cookie
-	newRefreshToken := auth.MarkRefreshToken()
-	if err := cfg.DB.UpdateRefreshToken(r.Context(), database.UpdateRefreshTokenParams{
+	// Issue a new refresh token and delete old one
+	newRefreshToken := auth.MakeRefreshToken()
+	if err := cfg.DB.DeleteRefreshToken(r.Context(), database.DeleteRefreshTokenParams{
+		Token:  refreshToken,
+		UserID: user.ID,
+	}); err != nil {
+		respondWithErr(w, http.StatusInternalServerError, "something went wrong, couldn't delete old refresh token", err)
+		return
+	}
+
+	_, err = cfg.DB.CreateRefreshToken(r.Context(), database.CreateRefreshTokenParams{
 		Token:     newRefreshToken,
 		ExpiresAt: time.Now().UTC().Add(time.Hour * 24 * 60),
 		UserID:    user.ID,
-	}); err == nil {
-		http.SetCookie(w, &http.Cookie{
-			Name:     "refresh_token",
-			Value:    newRefreshToken,
-			HttpOnly: true,
-			Secure:   cfg.Platform != "dev",
-			SameSite: http.SameSiteStrictMode,
-			Path:     "/api/refresh",
-			MaxAge:   60 * 24 * 60 * 60, // 60 days,
-		})
+	})
+	if err != nil {
+		respondWithErr(w, http.StatusInternalServerError, "something went wrong, couldn't create new refresh token", err)
+		return
 	}
 
+	http.SetCookie(w, &http.Cookie{
+		Name:     "refresh_token",
+		Value:    newRefreshToken,
+		HttpOnly: true,
+		Secure:   cfg.Platform != "dev",
+		SameSite: http.SameSiteStrictMode,
+		Path:     "/",
+		MaxAge:   60 * 24 * 60 * 60, // 60 days,
+	})
 	respondWithJson(w, http.StatusOK, response{
 		Token: accessToken,
 	})
+}
+
+func (cfg *APIConfig) HandlerLogout(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("refresh_token")
+	if err != nil {
+		respondWithJson(w, http.StatusNoContent, nil)
+		return
+	}
+
+	refreshToken := cookie.Value
+
+	authUser := r.Context().Value(UserContextKey).(*AuthUser)
+
+	if err := cfg.DB.DeleteRefreshToken(r.Context(), database.DeleteRefreshTokenParams{
+		Token:  refreshToken,
+		UserID: authUser.ID,
+	}); err != nil {
+		respondWithErr(w, http.StatusInternalServerError, "Failed to delete refresh token", err)
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "refresh_token",
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1, // tells browser to delete cookie
+		HttpOnly: true,
+		Secure:   cfg.Platform != "dev",
+		SameSite: http.SameSiteStrictMode,
+	})
+
+	respondWithJson(w, http.StatusNoContent, nil)
 }

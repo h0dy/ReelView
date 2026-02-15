@@ -21,10 +21,5 @@ WHERE refresh_tokens.token = $1
 AND revoked_at IS NULL
 AND expires_at > NOW();
 
--- name: UpdateRefreshToken :exec
-UPDATE refresh_tokens
-SET updated_at = NOW(),
-  token = $1,
-  expires_at = $2
-WHERE user_id = $3
-  AND revoked_at IS NULL;
+-- name: DeleteRefreshToken :exec
+DELETE FROM refresh_tokens WHERE token = $1 AND user_id = $2;
