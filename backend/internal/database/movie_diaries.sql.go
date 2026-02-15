@@ -151,17 +151,17 @@ const updateMovieDiary = `-- name: UpdateMovieDiary :one
 UPDATE movie_diaries
 SET watched_at = $1,
   updated_at = NOW()
-WHERE user_id = $2
+WHERE id = $2
 RETURNING id, movie_id, user_id, watched_at, created_at, updated_at
 `
 
 type UpdateMovieDiaryParams struct {
 	WatchedAt time.Time
-	UserID    uuid.UUID
+	ID        uuid.UUID
 }
 
 func (q *Queries) UpdateMovieDiary(ctx context.Context, arg UpdateMovieDiaryParams) (MovieDiary, error) {
-	row := q.db.QueryRowContext(ctx, updateMovieDiary, arg.WatchedAt, arg.UserID)
+	row := q.db.QueryRowContext(ctx, updateMovieDiary, arg.WatchedAt, arg.ID)
 	var i MovieDiary
 	err := row.Scan(
 		&i.ID,

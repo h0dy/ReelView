@@ -63,7 +63,7 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	// public
+	// others
 	mux.HandleFunc("GET /api/healthz", apiConfig.HandlerReadiness)
 	mux.HandleFunc("POST /admin/reset", apiConfig.HandlerReset)
 
@@ -113,6 +113,12 @@ func main() {
 		"POST /api/movies/{movieId}/diaries",
 		apiConfig.JWTAuth(apiConfig.JWTSecret)(
 			http.HandlerFunc(apiConfig.HandlerCreateMovieDiary),
+		),
+	)
+	mux.Handle(
+		"PUT /api/diaries/{diaryId}",
+		apiConfig.JWTAuth(apiConfig.JWTSecret)(
+			http.HandlerFunc(apiConfig.HandlerUpdateDiary),
 		),
 	)
 

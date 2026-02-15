@@ -5,10 +5,22 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/h0dy/ReelView/backend/internal/database"
 )
+
+type MovieReviewResponse struct {
+	ID        uuid.UUID `json:"id"`
+	MovieID   int32     `json:"movie_id"`
+	UserID    uuid.UUID `json:"user_id"`
+	Review    string    `json:"review"`
+	Rating    float32   `json:"rating"`
+	IsSpoiler bool      `json:"is_spoiler"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
 
 func (cfg *APIConfig) HandlerCreateReview(w http.ResponseWriter, r *http.Request) {
 	type reqBody struct {
@@ -18,8 +30,8 @@ func (cfg *APIConfig) HandlerCreateReview(w http.ResponseWriter, r *http.Request
 	}
 
 	type response struct {
-		User   AuthUser `json:"user"`
-		Review database.MovieReview
+		User   AuthUser            `json:"user"`
+		Review MovieReviewResponse `json:"review"`
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -75,7 +87,16 @@ func (cfg *APIConfig) HandlerCreateReview(w http.ResponseWriter, r *http.Request
 			Email:     user.Email,
 			IsPremium: user.IsPremium,
 		},
-		Review: reviewRecord,
+		Review: MovieReviewResponse{
+			ID:        reviewRecord.ID,
+			MovieID:   reviewRecord.MovieID,
+			UserID:    reviewRecord.UserID,
+			Review:    reviewRecord.Review,
+			Rating:    review.Rating,
+			IsSpoiler: review.IsSpoiler,
+			CreatedAt: reviewRecord.CreatedAt,
+			UpdatedAt: reviewRecord.UpdatedAt,
+		},
 	})
 }
 
@@ -153,7 +174,16 @@ func (cfg *APIConfig) HandlerUpdateReview(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	respondWithJson(w, http.StatusOK, updatedReview)
+	respondWithJson(w, http.StatusOK, MovieReviewResponse{
+		ID:        updatedReview.ID,
+		MovieID:   updatedReview.MovieID,
+		UserID:    updatedReview.UserID,
+		Review:    updatedReview.Review,
+		Rating:    updatedReview.Rating,
+		IsSpoiler: updatedReview.IsSpoiler,
+		CreatedAt: updatedReview.CreatedAt,
+		UpdatedAt: updatedReview.UpdatedAt,
+	})
 }
 
 func (cfg *APIConfig) HandlerGetMovieReviews(w http.ResponseWriter, r *http.Request) {
@@ -177,5 +207,14 @@ func (cfg *APIConfig) HandlerGetSingleReview(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	respondWithJson(w, http.StatusOK, review)
+	respondWithJson(w, http.StatusOK, MovieReviewResponse{
+		ID:        review.ID,
+		MovieID:   review.MovieID,
+		UserID:    review.UserID,
+		Review:    review.Review,
+		Rating:    review.Rating,
+		IsSpoiler: review.IsSpoiler,
+		CreatedAt: review.CreatedAt,
+		UpdatedAt: review.UpdatedAt,
+	})
 }
