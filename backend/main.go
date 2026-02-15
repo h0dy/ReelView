@@ -121,6 +121,12 @@ func main() {
 			http.HandlerFunc(apiConfig.HandlerUpdateDiary),
 		),
 	)
+	mux.Handle(
+		"DELETE /api/diaries/{diaryId}",
+		apiConfig.JWTAuth(apiConfig.JWTSecret)(
+			http.HandlerFunc(apiConfig.HandlerDeleteDiary),
+		),
+	)
 
 	// protected
 	mux.Handle(

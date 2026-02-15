@@ -157,3 +157,32 @@ func (cfg *APIConfig) HandlerUpdateDiary(w http.ResponseWriter, r *http.Request)
 		CreatedAt: updatedDiary.CreatedAt,
 	})
 }
+
+func (cfg *APIConfig) HandlerDeleteDiary(w http.ResponseWriter, r *http.Request) {
+	diaryId, err := uuid.Parse(r.PathValue("diaryId"))
+	if err != nil {
+		respondWithErr(w, http.StatusBadRequest, "invalid diary id", err)
+		return
+	}
+
+	diary, err := cfg.DB.GetDiary(r.Context(), diaryId)
+	if err != nil {
+		respondWithErr(w, http.StatusNotFound, "Couldn't find diary", err)
+		return
+	}
+	authUser := r.Context().Value(UserContextKey).(*AuthUser)
+
+	if authUser.ID != diary.UserID {
+		respondWithErr(w, http.StatusUnauthorized, "Unauthorized", err)
+		return
+	}
+
+	if err := cfg.DB.DeleteMovieDiary(r.Context(), database.DeleteMovieDiaryParams{
+		UserID: authUser.ID,
+		ID:     diary.ID,
+	}); err != nil {
+		respondWithErr(w, http.StatusInternalServerError, "something went wrong, couldn't delete diary", err)
+		return
+	}
+	respondWithJson(w, http.StatusNoContent, nil)
+}

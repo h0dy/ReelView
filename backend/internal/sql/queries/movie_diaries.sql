@@ -13,7 +13,7 @@ RETURNING *;
 -- name: DeleteMovieDiary :exec
 DELETE FROM movie_diaries 
   WHERE user_id = $1 
-  AND movie_id = $2;
+  AND id = $2;
 
 -- name: GetMovieDiariesForUser :many
 SELECT * FROM movie_diaries

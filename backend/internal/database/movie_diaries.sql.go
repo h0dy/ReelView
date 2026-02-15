@@ -41,16 +41,16 @@ func (q *Queries) CreateMovieDiary(ctx context.Context, arg CreateMovieDiaryPara
 const deleteMovieDiary = `-- name: DeleteMovieDiary :exec
 DELETE FROM movie_diaries 
   WHERE user_id = $1 
-  AND movie_id = $2
+  AND id = $2
 `
 
 type DeleteMovieDiaryParams struct {
-	UserID  uuid.UUID
-	MovieID int32
+	UserID uuid.UUID
+	ID     uuid.UUID
 }
 
 func (q *Queries) DeleteMovieDiary(ctx context.Context, arg DeleteMovieDiaryParams) error {
-	_, err := q.db.ExecContext(ctx, deleteMovieDiary, arg.UserID, arg.MovieID)
+	_, err := q.db.ExecContext(ctx, deleteMovieDiary, arg.UserID, arg.ID)
 	return err
 }
 
