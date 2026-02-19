@@ -13,6 +13,8 @@ import (
 
 type AuthUser struct { // User strut to hold json response
 	ID        uuid.UUID `json:"id"`
+	Username  string    `json:"username"`
+	Name      string    `json:"name"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	Email     string    `json:"email"`
@@ -34,6 +36,7 @@ func (cfg *APIConfig) HandlerGetUser(w http.ResponseWriter, r *http.Request) {
 
 	respondWithJson(w, http.StatusCreated, AuthUser{
 		ID:        user.ID,
+		Name:      user.Name,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
 		Email:     user.Email,
@@ -46,34 +49,39 @@ func (cfg *APIConfig) HandlerCreateUser(w http.ResponseWriter, r *http.Request) 
 		Email    string `json:"email"`
 		Username string `json:"username"`
 		Password string `json:"password"`
+		Name     string `json:"name"`
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	defer r.Body.Close()
 
-	params := reqBody{}
+	body := reqBody{}
 	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&params); err != nil {
+	if err := decoder.Decode(&body); err != nil {
 		respondWithErr(w, http.StatusBadRequest, "Invalid data", err)
 		return
 	}
 
 	// check for any possible missing values
-	if params.Email == "" || params.Username == "" || params.Password == "" {
+	if body.Email == "" ||
+		body.Username == "" ||
+		body.Password == "" ||
+		body.Name == "" {
 		respondWithErr(w, http.StatusBadRequest, "Make sure to provide the missing credentials", nil)
 		return
 	}
 
-	hashedPassword, err := auth.HashPassword(params.Password)
+	hashedPassword, err := auth.HashPassword(body.Password)
 	if err != nil {
 		respondWithErr(w, http.StatusInternalServerError, "Internal server error", err)
 		return
 	}
 
 	user, err := cfg.DB.CreateUser(r.Context(), database.CreateUserParams{
-		Email:          params.Email,
-		Username:       params.Username,
+		Email:          body.Email,
+		Username:       body.Username,
 		HashedPassword: hashedPassword,
+		Name:           body.Name,
 	})
 	if err != nil {
 		if strings.Contains(err.Error(), "users_email_key") {
@@ -92,6 +100,7 @@ func (cfg *APIConfig) HandlerCreateUser(w http.ResponseWriter, r *http.Request) 
 
 	respondWithJson(w, http.StatusCreated, AuthUser{
 		ID:        user.ID,
+		Name:      user.Name,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
 		Email:     user.Email,
@@ -104,6 +113,7 @@ func (cfg *APIConfig) HandlerUpdateUser(w http.ResponseWriter, r *http.Request) 
 		Email     string `json:"email"`
 		Username  string `json:"username"`
 		IsPremium bool   `json:"is_premium"`
+		Name      string `json:"name"`
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -118,6 +128,7 @@ func (cfg *APIConfig) HandlerUpdateUser(w http.ResponseWriter, r *http.Request) 
 	user := r.Context().Value(UserContextKey).(*AuthUser)
 	updatedUser, err := cfg.DB.UpdateUser(r.Context(), database.UpdateUserParams{
 		ID:        user.ID,
+		Name:      body.Name,
 		Email:     body.Email,
 		Username:  body.Username,
 		IsPremium: body.IsPremium,
@@ -129,6 +140,7 @@ func (cfg *APIConfig) HandlerUpdateUser(w http.ResponseWriter, r *http.Request) 
 
 	respondWithJson(w, http.StatusOK, AuthUser{
 		ID:        updatedUser.ID,
+		Name:      updatedUser.Name,
 		CreatedAt: updatedUser.CreatedAt,
 		UpdatedAt: updatedUser.UpdatedAt,
 		Email:     updatedUser.Email,

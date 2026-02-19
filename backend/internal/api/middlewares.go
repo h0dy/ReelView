@@ -38,6 +38,8 @@ func (cfg *APIConfig) JWTAuth(jwtSecret string) func(http.Handler) http.Handler 
 				UpdatedAt: user.UpdatedAt,
 				Email:     user.Email,
 				IsPremium: user.IsPremium,
+				Username:  user.Username,
+				Name:      user.Name,
 			}
 
 			ctx := context.WithValue(r.Context(), UserContextKey, authUser)

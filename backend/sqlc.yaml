@@ -6,6 +6,7 @@ sql:
       - "internal/sql/schema/002_refresh_tokens.sql"
       - "internal/sql/schema/003_movie_reviews.sql"
       - "internal/sql/schema/004_movie_diaries.sql"
+      - "internal/sql/schema/005_add_name_col.sql"
     queries: "internal/sql/queries"
     engine: "postgresql"
     gen:

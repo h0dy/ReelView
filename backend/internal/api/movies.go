@@ -28,8 +28,8 @@ func (cfg *APIConfig) HandlerGetMovieDetails(w http.ResponseWriter, r *http.Requ
 	movieId, _ := strconv.Atoi(r.PathValue("movieId"))
 
 	type response struct {
-		Movie   client.MovieDetails    `json:"movie"`
-		Reviews []database.MovieReview `json:"review"`
+		Movie   client.MovieDetails           `json:"movie"`
+		Reviews []database.GetMovieReviewsRow `json:"review"`
 	}
 
 	w.Header().Set("Content-Type", "application/json")

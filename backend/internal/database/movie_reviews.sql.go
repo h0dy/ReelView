@@ -7,6 +7,7 @@ package database
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -57,28 +58,61 @@ func (q *Queries) DeleteReview(ctx context.Context, id uuid.UUID) error {
 }
 
 const getMovieReviews = `-- name: GetMovieReviews :many
-SELECT id, movie_id, user_id, review, rating, is_spoiler, created_at, updated_at FROM movie_reviews
- WHERE movie_id = $1
+SELECT 
+    r.id,
+    r.movie_id,
+    r.review,
+    r.rating,
+    r.is_spoiler,
+    r.created_at,
+    r.updated_at,
+    u.id AS user_id,
+    u.name AS user_name,
+    u.email AS user_email,
+    u.username AS user_username,
+    u.is_premium AS user_is_premium
+FROM movie_reviews r
+INNER JOIN users u ON r.user_id = u.id
+WHERE r.movie_id = $1
 `
 
-func (q *Queries) GetMovieReviews(ctx context.Context, movieID int32) ([]MovieReview, error) {
+type GetMovieReviewsRow struct {
+	ID            uuid.UUID
+	MovieID       int32
+	Review        string
+	Rating        float32
+	IsSpoiler     bool
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	UserID        uuid.UUID
+	UserName      string
+	UserEmail     string
+	UserUsername  string
+	UserIsPremium bool
+}
+
+func (q *Queries) GetMovieReviews(ctx context.Context, movieID int32) ([]GetMovieReviewsRow, error) {
 	rows, err := q.db.QueryContext(ctx, getMovieReviews, movieID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []MovieReview
+	var items []GetMovieReviewsRow
 	for rows.Next() {
-		var i MovieReview
+		var i GetMovieReviewsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.MovieID,
-			&i.UserID,
 			&i.Review,
 			&i.Rating,
 			&i.IsSpoiler,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.UserID,
+			&i.UserName,
+			&i.UserEmail,
+			&i.UserUsername,
+			&i.UserIsPremium,
 		); err != nil {
 			return nil, err
 		}

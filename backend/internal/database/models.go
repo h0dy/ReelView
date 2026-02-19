@@ -48,4 +48,5 @@ type User struct {
 	Username       string
 	HashedPassword string
 	IsPremium      bool
+	Name           string
 }

@@ -14,12 +14,12 @@ import (
 type MovieReviewResponse struct {
 	ID        uuid.UUID `json:"id"`
 	MovieID   int32     `json:"movie_id"`
-	UserID    uuid.UUID `json:"user_id"`
 	Review    string    `json:"review"`
 	Rating    float32   `json:"rating"`
 	IsSpoiler bool      `json:"is_spoiler"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	User      AuthUser  `json:"user"`
 }
 
 func (cfg *APIConfig) HandlerCreateReview(w http.ResponseWriter, r *http.Request) {
@@ -27,11 +27,6 @@ func (cfg *APIConfig) HandlerCreateReview(w http.ResponseWriter, r *http.Request
 		Body      string  `json:"Body"`
 		Rating    float32 `json:"rating"`
 		IsSpoiler bool    `json:"is_spoiler"`
-	}
-
-	type response struct {
-		User   AuthUser            `json:"user"`
-		Review MovieReviewResponse `json:"review"`
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -48,7 +43,7 @@ func (cfg *APIConfig) HandlerCreateReview(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	user := r.Context().Value(UserContextKey).(*AuthUser)
+	authUser := r.Context().Value(UserContextKey).(*AuthUser)
 
 	if review.Rating > 10 || review.Rating < 0 {
 		respondWithErr(w, http.StatusBadRequest, "invalid rating", nil)
@@ -66,7 +61,7 @@ func (cfg *APIConfig) HandlerCreateReview(w http.ResponseWriter, r *http.Request
 		r.Context(),
 		database.CreateMovieReviewParams{
 			MovieID:   int32(movieId),
-			UserID:    user.ID,
+			UserID:    authUser.ID,
 			Review:    review.Body,
 			Rating:    review.Rating,
 			IsSpoiler: review.IsSpoiler,
@@ -79,24 +74,21 @@ func (cfg *APIConfig) HandlerCreateReview(w http.ResponseWriter, r *http.Request
 		respondWithErr(w, http.StatusInternalServerError, "couldn't create review", err)
 	}
 
-	respondWithJson(w, http.StatusCreated, response{
+	respondWithJson(w, http.StatusCreated, MovieReviewResponse{
+		ID:      reviewRecord.ID,
+		MovieID: reviewRecord.MovieID,
 		User: AuthUser{
-			ID:        user.ID,
-			CreatedAt: user.CreatedAt,
-			UpdatedAt: user.UpdatedAt,
-			Email:     user.Email,
-			IsPremium: user.IsPremium,
+			ID:        authUser.ID,
+			Username:  authUser.Username,
+			Name:      authUser.Name,
+			Email:     authUser.Email,
+			IsPremium: authUser.IsPremium,
 		},
-		Review: MovieReviewResponse{
-			ID:        reviewRecord.ID,
-			MovieID:   reviewRecord.MovieID,
-			UserID:    reviewRecord.UserID,
-			Review:    reviewRecord.Review,
-			Rating:    review.Rating,
-			IsSpoiler: review.IsSpoiler,
-			CreatedAt: reviewRecord.CreatedAt,
-			UpdatedAt: reviewRecord.UpdatedAt,
-		},
+		Review:    reviewRecord.Review,
+		Rating:    review.Rating,
+		IsSpoiler: review.IsSpoiler,
+		CreatedAt: reviewRecord.CreatedAt,
+		UpdatedAt: reviewRecord.UpdatedAt,
 	})
 }
 
@@ -177,7 +169,7 @@ func (cfg *APIConfig) HandlerUpdateReview(w http.ResponseWriter, r *http.Request
 	respondWithJson(w, http.StatusOK, MovieReviewResponse{
 		ID:        updatedReview.ID,
 		MovieID:   updatedReview.MovieID,
-		UserID:    updatedReview.UserID,
+		User:      *authUser,
 		Review:    updatedReview.Review,
 		Rating:    updatedReview.Rating,
 		IsSpoiler: updatedReview.IsSpoiler,
@@ -192,7 +184,28 @@ func (cfg *APIConfig) HandlerGetMovieReviews(w http.ResponseWriter, r *http.Requ
 	if err != nil {
 		return
 	}
-	respondWithJson(w, http.StatusOK, reviews)
+
+	reviewsResponse := []MovieReviewResponse{}
+	for _, review := range reviews {
+		reviewsResponse = append(reviewsResponse, MovieReviewResponse{
+			ID:        review.ID,
+			MovieID:   review.MovieID,
+			Review:    review.Review,
+			Rating:    review.Rating,
+			IsSpoiler: review.IsSpoiler,
+			CreatedAt: review.CreatedAt,
+			UpdatedAt: review.UpdatedAt,
+			User: AuthUser{
+				ID:        review.UserID,
+				Username:  review.UserUsername,
+				Name:      review.UserName,
+				Email:     review.UserEmail,
+				IsPremium: review.UserIsPremium,
+			},
+		})
+	}
+
+	respondWithJson(w, http.StatusOK, reviewsResponse)
 }
 
 func (cfg *APIConfig) HandlerGetSingleReview(w http.ResponseWriter, r *http.Request) {
@@ -206,11 +219,22 @@ func (cfg *APIConfig) HandlerGetSingleReview(w http.ResponseWriter, r *http.Requ
 		respondWithErr(w, http.StatusNotFound, "Couldn't find review", err)
 		return
 	}
+	user, err := cfg.DB.GetUserByID(r.Context(), review.UserID)
+	if err != nil {
+		respondWithErr(w, http.StatusInternalServerError, "couldn't get user, something went wrong", err)
+		return
+	}
 
 	respondWithJson(w, http.StatusOK, MovieReviewResponse{
-		ID:        review.ID,
-		MovieID:   review.MovieID,
-		UserID:    review.UserID,
+		ID:      review.ID,
+		MovieID: review.MovieID,
+		User: AuthUser{
+			ID:        user.ID,
+			Username:  user.Username,
+			Name:      user.Name,
+			Email:     user.Username,
+			IsPremium: user.IsPremium,
+		},
 		Review:    review.Review,
 		Rating:    review.Rating,
 		IsSpoiler: review.IsSpoiler,
@@ -231,15 +255,26 @@ func (cfg *APIConfig) HandlerGetUserReviews(w http.ResponseWriter, r *http.Reque
 		respondWithErr(w, http.StatusNotFound, "couldn't find reviews for user", err)
 		return
 	}
+	user, err := cfg.DB.GetUserByID(r.Context(), userId)
+	if err != nil {
+		respondWithErr(w, http.StatusInternalServerError, "something went wrong with retrieving the user's review", err)
+		return
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 
 	reviewsResponse := []MovieReviewResponse{}
 	for _, review := range reviews {
 		reviewsResponse = append(reviewsResponse, MovieReviewResponse{
-			ID:        review.ID,
-			MovieID:   review.MovieID,
-			UserID:    review.UserID,
+			ID:      review.ID,
+			MovieID: review.MovieID,
+			User: AuthUser{
+				ID:        user.ID,
+				Username:  user.Username,
+				Name:      user.Username,
+				Email:     user.Email,
+				IsPremium: user.IsPremium,
+			},
 			Review:    review.Review,
 			Rating:    review.Rating,
 			IsSpoiler: review.IsSpoiler,
