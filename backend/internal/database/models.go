@@ -50,3 +50,10 @@ type User struct {
 	IsPremium      bool
 	Name           string
 }
+
+type Watchlist struct {
+	ID        uuid.UUID
+	MovieID   int32
+	UserID    uuid.UUID
+	CreatedAt time.Time
+}

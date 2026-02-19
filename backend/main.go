@@ -136,6 +136,13 @@ func main() {
 		),
 	)
 
+	mux.Handle(
+		"POST /api/movies/{movieId}/watchlist",
+		apiConfig.JWTAuth(apiConfig.JWTSecret)(
+			http.HandlerFunc(apiConfig.HandlerAddMovieToWatchlist),
+		),
+	)
+
 	// protected
 	mux.Handle(
 		"POST /api/protected", // endpoint
