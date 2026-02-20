@@ -71,3 +71,29 @@ func (cfg *APIConfig) HandlerRemoveFromWatchlist(w http.ResponseWriter, r *http.
 	}
 	respondWithJson(w, http.StatusNoContent, nil)
 }
+
+func (cfg *APIConfig) HandlerGetUserWatchlist(w http.ResponseWriter, r *http.Request) {
+	userId, err := uuid.Parse(r.PathValue("userId"))
+	if err != nil {
+		respondWithErr(w, http.StatusBadRequest, "invalid user id", err)
+		return
+	}
+
+	userWatchlist, err := cfg.DB.GetUserWatchlist(r.Context(), userId)
+	if err != nil {
+		respondWithErr(w, http.StatusInternalServerError, "something went wrong, couldn't get user's watchlist", err)
+		return
+	}
+
+	watchlistResponse := []WatchlistRecordResponse{}
+	for _, m := range userWatchlist {
+		watchlistResponse = append(watchlistResponse, WatchlistRecordResponse{
+			ID:        m.ID,
+			MovieID:   m.MovieID,
+			UserID:    m.UserID,
+			CreatedAt: m.CreatedAt,
+		})
+	}
+
+	respondWithJson(w, http.StatusOK, watchlistResponse)
+}

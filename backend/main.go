@@ -78,6 +78,7 @@ func main() {
 	)
 	mux.HandleFunc("GET /api/users/{userId}/diaries", apiConfig.HandlerGetUserDiaries)
 	mux.HandleFunc("GET /api/users/{userId}/reviews", apiConfig.HandlerGetUserReviews)
+	mux.HandleFunc("GET /api/users/{userId}/watchlist", apiConfig.HandlerGetUserWatchlist)
 
 	// auth
 	mux.HandleFunc("POST /api/login", apiConfig.HandlerUserLogin)

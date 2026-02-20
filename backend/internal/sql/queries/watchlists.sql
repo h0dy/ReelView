@@ -8,3 +8,6 @@ DELETE FROM watchlists WHERE id = $1;
 
 -- name: GetWatchlistsRecord :one
 SELECT * FROM watchlists WHERE id = $1;
+
+-- name: GetUserWatchlist :many
+SELECT * FROM watchlists WHERE user_id = $1;

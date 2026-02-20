@@ -34,6 +34,38 @@ func (q *Queries) AddToWatchlist(ctx context.Context, arg AddToWatchlistParams) 
 	return i, err
 }
 
+const getUserWatchlist = `-- name: GetUserWatchlist :many
+SELECT id, movie_id, user_id, created_at FROM watchlists WHERE user_id = $1
+`
+
+func (q *Queries) GetUserWatchlist(ctx context.Context, userID uuid.UUID) ([]Watchlist, error) {
+	rows, err := q.db.QueryContext(ctx, getUserWatchlist, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Watchlist
+	for rows.Next() {
+		var i Watchlist
+		if err := rows.Scan(
+			&i.ID,
+			&i.MovieID,
+			&i.UserID,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getWatchlistsRecord = `-- name: GetWatchlistsRecord :one
 SELECT id, movie_id, user_id, created_at FROM watchlists WHERE id = $1
 `
