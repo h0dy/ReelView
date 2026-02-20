@@ -5,7 +5,6 @@ CREATE TABLE watchlists(
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   created_at TIMESTAMP NOT NULL,
   CONSTRAINT unique_user_watchlist UNIQUE (user_id, movie_id)
-
 );
 
 -- -- +goose  Down 

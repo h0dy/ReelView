@@ -18,7 +18,7 @@ type WatchlistRecordResponse struct {
 	MovieDetails client.MovieDetails `json:"movie_details"`
 }
 
-func (cfg *APIConfig) HandlerAddMovieToWatchlist(w http.ResponseWriter, r *http.Request) {
+func (cfg *APIConfig) HandlerAddToWatchlist(w http.ResponseWriter, r *http.Request) {
 	movieId, _ := strconv.Atoi(r.PathValue("movieId"))
 	movie, err := cfg.TmdbClient.GetMovieDetails(r.Context(), movieId)
 	if err != nil {
@@ -32,6 +32,10 @@ func (cfg *APIConfig) HandlerAddMovieToWatchlist(w http.ResponseWriter, r *http.
 		UserID:  authUser.ID,
 		MovieID: int32(movie.ID),
 	})
+	if err != nil {
+		respondWithErr(w, http.StatusBadRequest, "movie already in watchlist", err)
+		return
+	}
 
 	respondWithJson(w, http.StatusCreated, WatchlistRecordResponse{
 		ID:           watchlistRecord.ID,
@@ -40,4 +44,30 @@ func (cfg *APIConfig) HandlerAddMovieToWatchlist(w http.ResponseWriter, r *http.
 		CreatedAt:    watchlistRecord.CreatedAt,
 		MovieDetails: movie,
 	})
+}
+
+func (cfg *APIConfig) HandlerRemoveFromWatchlist(w http.ResponseWriter, r *http.Request) {
+	id, err := uuid.Parse(r.PathValue("id"))
+	if err != nil {
+		respondWithErr(w, http.StatusBadRequest, "invalid id", err)
+		return
+	}
+
+	authUser := r.Context().Value(UserContextKey).(*AuthUser)
+	record, err := cfg.DB.GetWatchlistsRecord(r.Context(), id)
+	if err != nil {
+		respondWithErr(w, http.StatusNotFound, "couldn't find watchlist record", err)
+		return
+	}
+
+	if record.UserID != authUser.ID {
+		respondWithErr(w, http.StatusUnauthorized, "Unauthorized", err)
+		return
+	}
+
+	if err := cfg.DB.RemoveMovieFromWatchlist(r.Context(), id); err != nil {
+		respondWithErr(w, http.StatusInternalServerError, "couldn't remove movie from watchlist", err)
+		return
+	}
+	respondWithJson(w, http.StatusNoContent, nil)
 }

@@ -136,10 +136,17 @@ func main() {
 		),
 	)
 
+	// watchlist
 	mux.Handle(
 		"POST /api/movies/{movieId}/watchlist",
 		apiConfig.JWTAuth(apiConfig.JWTSecret)(
-			http.HandlerFunc(apiConfig.HandlerAddMovieToWatchlist),
+			http.HandlerFunc(apiConfig.HandlerAddToWatchlist),
+		),
+	)
+	mux.Handle(
+		"DELETE /api/watchlist/{id}",
+		apiConfig.JWTAuth(apiConfig.JWTSecret)(
+			http.HandlerFunc(apiConfig.HandlerRemoveFromWatchlist),
 		),
 	)
 

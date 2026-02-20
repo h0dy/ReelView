@@ -33,3 +33,28 @@ func (q *Queries) AddToWatchlist(ctx context.Context, arg AddToWatchlistParams) 
 	)
 	return i, err
 }
+
+const getWatchlistsRecord = `-- name: GetWatchlistsRecord :one
+SELECT id, movie_id, user_id, created_at FROM watchlists WHERE id = $1
+`
+
+func (q *Queries) GetWatchlistsRecord(ctx context.Context, id uuid.UUID) (Watchlist, error) {
+	row := q.db.QueryRowContext(ctx, getWatchlistsRecord, id)
+	var i Watchlist
+	err := row.Scan(
+		&i.ID,
+		&i.MovieID,
+		&i.UserID,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const removeMovieFromWatchlist = `-- name: RemoveMovieFromWatchlist :exec
+DELETE FROM watchlists WHERE id = $1
+`
+
+func (q *Queries) RemoveMovieFromWatchlist(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, removeMovieFromWatchlist, id)
+	return err
+}
