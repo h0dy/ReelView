@@ -8,6 +8,8 @@ import (
 
 	"github.com/h0dy/ReelView/backend/internal/auth"
 	"github.com/h0dy/ReelView/backend/internal/database"
+	"github.com/h0dy/ReelView/backend/internal/types"
+	"github.com/h0dy/ReelView/backend/internal/utils"
 )
 
 func (cfg *APIConfig) HandlerUserLogin(w http.ResponseWriter, r *http.Request) {
@@ -16,8 +18,8 @@ func (cfg *APIConfig) HandlerUserLogin(w http.ResponseWriter, r *http.Request) {
 		Password string `json:"password"`
 	}
 	type response struct {
-		User  AuthUser `json:"user"`
-		Token string   `json:"token"`
+		User  types.AuthUser `json:"user"`
+		Token string         `json:"token"`
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -26,16 +28,16 @@ func (cfg *APIConfig) HandlerUserLogin(w http.ResponseWriter, r *http.Request) {
 	data := reqBody{}
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&data); err != nil {
-		respondWithErr(w, http.StatusInternalServerError, "Couldn't decode the json data", err)
+		respondWithErr(w, http.StatusBadRequest, "missing credential", err)
 	}
 
 	user, err := cfg.DB.GetUserByEmail(r.Context(), data.Email)
 	if err != nil {
-		respondWithErr(w, http.StatusBadRequest, "Incorrect credential", err)
+		respondWithErr(w, http.StatusBadRequest, "couldn't find user. you need to sign in", err)
 		return
 	}
 	if err := auth.CheckPasswordHash(data.Password, user.HashedPassword); err != nil {
-		respondWithErr(w, http.StatusUnauthorized, "Incorrect credential", err)
+		respondWithErr(w, http.StatusInternalServerError, "something went wrong", err)
 		return
 	}
 
@@ -66,14 +68,10 @@ func (cfg *APIConfig) HandlerUserLogin(w http.ResponseWriter, r *http.Request) {
 		MaxAge:   60 * 24 * 60 * 60, // 60 days
 	})
 
+	userResponse := utils.DbUserToJson(user)
+
 	respondWithJson(w, http.StatusOK, response{
-		User: AuthUser{
-			ID:        user.ID,
-			CreatedAt: user.CreatedAt,
-			UpdatedAt: user.UpdatedAt,
-			Email:     user.Email,
-			IsPremium: user.IsPremium,
-		},
+		User:  userResponse,
 		Token: accessToken,
 	})
 }
@@ -86,7 +84,7 @@ func (cfg *APIConfig) HandlerTestToken(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	defer r.Body.Close()
 
-	user, ok := r.Context().Value(UserContextKey).(*AuthUser)
+	user, ok := r.Context().Value(UserContextKey).(*types.AuthUser)
 	if !ok {
 		respondWithErr(w, http.StatusUnauthorized, "Unauthorized", nil)
 		return
@@ -167,7 +165,7 @@ func (cfg *APIConfig) HandlerLogout(w http.ResponseWriter, r *http.Request) {
 
 	refreshToken := cookie.Value
 
-	authUser := r.Context().Value(UserContextKey).(*AuthUser)
+	authUser := r.Context().Value(UserContextKey).(*types.AuthUser)
 
 	if err := cfg.DB.DeleteRefreshToken(r.Context(), database.DeleteRefreshTokenParams{
 		Token:  refreshToken,

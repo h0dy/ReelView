@@ -9,11 +9,29 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/sqlc-dev/pqtype"
 )
+
+type Movie struct {
+	ID            uuid.UUID
+	TmdbID        int32
+	Title         string
+	OriginalTitle string
+	PosterPath    string
+	BackdropPath  string
+	Overview      string
+	ReleaseDate   time.Time
+	VoteAverage   float64
+	Genres        pqtype.NullRawMessage
+	Runtime       int32
+	Status        string
+	Tagline       string
+	CreatedAt     time.Time
+}
 
 type MovieDiary struct {
 	ID        uuid.UUID
-	MovieID   int32
+	MovieID   uuid.UUID
 	UserID    uuid.UUID
 	WatchedAt time.Time
 	CreatedAt time.Time
@@ -22,7 +40,7 @@ type MovieDiary struct {
 
 type MovieReview struct {
 	ID        uuid.UUID
-	MovieID   int32
+	MovieID   uuid.UUID
 	UserID    uuid.UUID
 	Review    string
 	Rating    float32
@@ -53,7 +71,7 @@ type User struct {
 
 type Watchlist struct {
 	ID        uuid.UUID
-	MovieID   int32
+	MovieID   uuid.UUID
 	UserID    uuid.UUID
 	CreatedAt time.Time
 }

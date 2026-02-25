@@ -19,7 +19,7 @@ RETURNING id, movie_id, user_id, watched_at, created_at, updated_at
 `
 
 type CreateMovieDiaryParams struct {
-	MovieID   int32
+	MovieID   uuid.UUID
 	UserID    uuid.UUID
 	WatchedAt time.Time
 }
@@ -80,7 +80,7 @@ SELECT id, movie_id, user_id, watched_at, created_at, updated_at FROM movie_diar
 
 type GetMovieDiariesForUserParams struct {
 	UserID  uuid.UUID
-	MovieID int32
+	MovieID uuid.UUID
 }
 
 func (q *Queries) GetMovieDiariesForUser(ctx context.Context, arg GetMovieDiariesForUserParams) ([]MovieDiary, error) {

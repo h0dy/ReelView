@@ -19,7 +19,7 @@ RETURNING id, movie_id, user_id, created_at
 
 type AddToWatchlistParams struct {
 	UserID  uuid.UUID
-	MovieID int32
+	MovieID uuid.UUID
 }
 
 func (q *Queries) AddToWatchlist(ctx context.Context, arg AddToWatchlistParams) (Watchlist, error) {

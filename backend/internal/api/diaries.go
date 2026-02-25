@@ -3,21 +3,13 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/h0dy/ReelView/backend/internal/database"
+	"github.com/h0dy/ReelView/backend/internal/types"
+	"github.com/h0dy/ReelView/backend/internal/utils"
 )
-
-type DiaryResponse struct {
-	ID        uuid.UUID `json:"id"`
-	MovieID   int32     `json:"movie_id"`
-	UserID    uuid.UUID `json:"user_id"`
-	WatchedAt time.Time `json:"watched_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	CreatedAt time.Time `json:"created_at"`
-}
 
 func (cfg *APIConfig) HandlerGetDiary(w http.ResponseWriter, r *http.Request) {
 	diaryId, err := uuid.Parse(r.PathValue("diaryId"))
@@ -26,26 +18,22 @@ func (cfg *APIConfig) HandlerGetDiary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	diary, err := cfg.DB.GetDiary(r.Context(), diaryId)
+	diaryRecord, err := cfg.DB.GetDiary(r.Context(), diaryId)
 	if err != nil {
 		respondWithErr(w, http.StatusNotFound, "couldn't find diary", err)
 		return
 	}
-	respondWithJson(w, http.StatusOK, DiaryResponse{
-		ID:        diary.ID,
-		MovieID:   diary.MovieID,
-		UserID:    diary.UserID,
-		WatchedAt: diary.WatchedAt,
-		UpdatedAt: diary.UpdatedAt,
-		CreatedAt: diary.CreatedAt,
-	})
+
+	diary := utils.DbDiaryToJson(diaryRecord)
+
+	respondWithJson(w, http.StatusOK, diary)
 }
 
 func (cfg *APIConfig) HandlerCreateMovieDiary(w http.ResponseWriter, r *http.Request) {
 	type reqBody struct {
 		WatchedAt string `json:"watched_at"`
 	}
-	movieId, err := strconv.Atoi(r.PathValue("movieId"))
+	movieId, err := uuid.Parse(r.PathValue("movieId"))
 	if err != nil {
 		respondWithErr(w, http.StatusInternalServerError, "invalid movieId", err)
 		return
@@ -73,10 +61,15 @@ func (cfg *APIConfig) HandlerCreateMovieDiary(w http.ResponseWriter, r *http.Req
 
 	}
 
-	user := r.Context().Value(UserContextKey).(*AuthUser)
+	user := r.Context().Value(UserContextKey).(*types.AuthUser)
 
-	diary, err := cfg.DB.CreateMovieDiary(r.Context(), database.CreateMovieDiaryParams{
-		MovieID:   int32(movieId),
+	if _, err := cfg.DB.GetMovieById(r.Context(), movieId); err != nil {
+		respondWithErr(w, http.StatusNotFound, "movie doesn't exit", err)
+		return
+	}
+
+	diaryRecord, err := cfg.DB.CreateMovieDiary(r.Context(), database.CreateMovieDiaryParams{
+		MovieID:   movieId,
 		UserID:    user.ID,
 		WatchedAt: watchedAt,
 	})
@@ -88,14 +81,9 @@ func (cfg *APIConfig) HandlerCreateMovieDiary(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	respondWithJson(w, http.StatusOK, DiaryResponse{
-		ID:        diary.ID,
-		MovieID:   diary.MovieID,
-		UserID:    diary.UserID,
-		WatchedAt: diary.WatchedAt,
-		UpdatedAt: diary.UpdatedAt,
-		CreatedAt: diary.CreatedAt,
-	})
+	diary := utils.DbDiaryToJson(diaryRecord)
+
+	respondWithJson(w, http.StatusOK, diary)
 }
 
 func (cfg *APIConfig) HandlerUpdateDiary(w http.ResponseWriter, r *http.Request) {
@@ -116,7 +104,7 @@ func (cfg *APIConfig) HandlerUpdateDiary(w http.ResponseWriter, r *http.Request)
 		respondWithErr(w, http.StatusNotFound, "Couldn't find dairy", err)
 		return
 	}
-	authUser := r.Context().Value(UserContextKey).(*AuthUser)
+	authUser := r.Context().Value(UserContextKey).(*types.AuthUser)
 	if authUser.ID != diary.UserID {
 		respondWithErr(w, http.StatusUnauthorized, "Unauthorized", err)
 		return
@@ -148,14 +136,9 @@ func (cfg *APIConfig) HandlerUpdateDiary(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	respondWithJson(w, http.StatusOK, DiaryResponse{
-		ID:        updatedDiary.ID,
-		MovieID:   updatedDiary.MovieID,
-		UserID:    updatedDiary.UserID,
-		WatchedAt: updatedDiary.WatchedAt,
-		UpdatedAt: updatedDiary.UpdatedAt,
-		CreatedAt: updatedDiary.CreatedAt,
-	})
+	Diary := utils.DbDiaryToJson(updatedDiary)
+
+	respondWithJson(w, http.StatusOK, Diary)
 }
 
 func (cfg *APIConfig) HandlerDeleteDiary(w http.ResponseWriter, r *http.Request) {
@@ -170,7 +153,7 @@ func (cfg *APIConfig) HandlerDeleteDiary(w http.ResponseWriter, r *http.Request)
 		respondWithErr(w, http.StatusNotFound, "Couldn't find diary", err)
 		return
 	}
-	authUser := r.Context().Value(UserContextKey).(*AuthUser)
+	authUser := r.Context().Value(UserContextKey).(*types.AuthUser)
 
 	if authUser.ID != diary.UserID {
 		respondWithErr(w, http.StatusUnauthorized, "Unauthorized", err)
@@ -201,16 +184,10 @@ func (cfg *APIConfig) HandlerGetUserDiaries(w http.ResponseWriter, r *http.Reque
 
 	w.Header().Set("Content-Type", "application/json")
 
-	diariesResponse := []DiaryResponse{}
-	for _, diary := range diaries {
-		diariesResponse = append(diariesResponse, DiaryResponse{
-			ID:        diary.ID,
-			MovieID:   diary.MovieID,
-			UserID:    diary.ID,
-			WatchedAt: diary.WatchedAt,
-			UpdatedAt: diary.UpdatedAt,
-			CreatedAt: diary.CreatedAt,
-		})
+	diariesResponse := []types.Diary{}
+	for _, d := range diaries {
+		diary := utils.DbDiaryToJson(d)
+		diariesResponse = append(diariesResponse, diary)
 	}
 
 	respondWithJson(w, http.StatusOK, diariesResponse)

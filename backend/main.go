@@ -11,6 +11,7 @@ import (
 	"github.com/h0dy/ReelView/backend/internal/api"
 	"github.com/h0dy/ReelView/backend/internal/client"
 	"github.com/h0dy/ReelView/backend/internal/database"
+	"github.com/h0dy/ReelView/backend/internal/utils"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
@@ -54,11 +55,17 @@ func main() {
 	dbQueries := database.New(db)
 	tmdbClient := client.NewTmdbClient(5*time.Second, tmdbAcessToken)
 
+	utils := &utils.UtilsConfig{
+		DB:         dbQueries,
+		TmdbClient: tmdbClient,
+	}
+
 	apiConfig := api.APIConfig{
 		Platform:   platform,
 		Port:       port,
 		DB:         dbQueries,
 		TmdbClient: tmdbClient,
+		Utils:      utils,
 	}
 
 	mux := http.NewServeMux()
@@ -92,7 +99,7 @@ func main() {
 
 	// movies
 	mux.HandleFunc("GET /api/movies", apiConfig.HandlerGetMovies)
-	mux.HandleFunc("GET /api/movies/{movieId}", apiConfig.HandlerGetMovieDetails)
+	mux.HandleFunc("GET /api/movies/{tmdbId}", apiConfig.HandlerGetMovieDetails)
 
 	// reviews
 	mux.HandleFunc("GET /api/reviews/{reviewId}", apiConfig.HandlerGetSingleReview)

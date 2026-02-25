@@ -2,58 +2,49 @@ package api
 
 import (
 	"net/http"
-	"strconv"
-	"time"
 
 	"github.com/google/uuid"
-	"github.com/h0dy/ReelView/backend/internal/client"
 	"github.com/h0dy/ReelView/backend/internal/database"
+	"github.com/h0dy/ReelView/backend/internal/types"
+	"github.com/h0dy/ReelView/backend/internal/utils"
 )
 
-type WatchlistRecordResponse struct {
-	ID           uuid.UUID           `json:"id"`
-	MovieID      int32               `json:"movie_id"`
-	UserID       uuid.UUID           `json:"user_id"`
-	CreatedAt    time.Time           `json:"created_at"`
-	MovieDetails client.MovieDetails `json:"movie_details"`
-}
-
-func (cfg *APIConfig) HandlerAddToWatchlist(w http.ResponseWriter, r *http.Request) {
-	movieId, _ := strconv.Atoi(r.PathValue("movieId"))
-	movie, err := cfg.TmdbClient.GetMovieDetails(r.Context(), movieId)
+func (cfg APIConfig) HandlerAddToWatchlist(w http.ResponseWriter, r *http.Request) {
+	movieId, err := uuid.Parse(r.PathValue("movieId"))
+	if err != nil {
+		respondWithErr(w, http.StatusBadRequest, "invalid movie id", err)
+		return
+	}
+	movie, err := cfg.DB.GetMovieById(r.Context(), movieId)
 	if err != nil {
 		respondWithErr(w, http.StatusNotFound, "movie doesn't exit", err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	authUser := r.Context().Value(UserContextKey).(*AuthUser)
+	authUser := r.Context().Value(UserContextKey).(*types.AuthUser)
 
 	watchlistRecord, err := cfg.DB.AddToWatchlist(r.Context(), database.AddToWatchlistParams{
 		UserID:  authUser.ID,
-		MovieID: int32(movie.ID),
+		MovieID: movie.ID,
 	})
 	if err != nil {
 		respondWithErr(w, http.StatusBadRequest, "movie already in watchlist", err)
 		return
 	}
+	movieResponse, _ := utils.DbMovieTypeToJson(movie)
+	watchlist := utils.DbWatchlistToJson(watchlistRecord, movieResponse)
 
-	respondWithJson(w, http.StatusCreated, WatchlistRecordResponse{
-		ID:           watchlistRecord.ID,
-		MovieID:      watchlistRecord.MovieID,
-		UserID:       watchlistRecord.UserID,
-		CreatedAt:    watchlistRecord.CreatedAt,
-		MovieDetails: movie,
-	})
+	respondWithJson(w, http.StatusCreated, watchlist)
 }
 
-func (cfg *APIConfig) HandlerRemoveFromWatchlist(w http.ResponseWriter, r *http.Request) {
+func (cfg APIConfig) HandlerRemoveFromWatchlist(w http.ResponseWriter, r *http.Request) {
 	id, err := uuid.Parse(r.PathValue("id"))
 	if err != nil {
 		respondWithErr(w, http.StatusBadRequest, "invalid id", err)
 		return
 	}
 
-	authUser := r.Context().Value(UserContextKey).(*AuthUser)
+	authUser := r.Context().Value(UserContextKey).(*types.AuthUser)
 	record, err := cfg.DB.GetWatchlistsRecord(r.Context(), id)
 	if err != nil {
 		respondWithErr(w, http.StatusNotFound, "couldn't find watchlist record", err)
@@ -72,7 +63,7 @@ func (cfg *APIConfig) HandlerRemoveFromWatchlist(w http.ResponseWriter, r *http.
 	respondWithJson(w, http.StatusNoContent, nil)
 }
 
-func (cfg *APIConfig) HandlerGetUserWatchlist(w http.ResponseWriter, r *http.Request) {
+func (cfg APIConfig) HandlerGetUserWatchlist(w http.ResponseWriter, r *http.Request) {
 	userId, err := uuid.Parse(r.PathValue("userId"))
 	if err != nil {
 		respondWithErr(w, http.StatusBadRequest, "invalid user id", err)
@@ -85,14 +76,12 @@ func (cfg *APIConfig) HandlerGetUserWatchlist(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	watchlistResponse := []WatchlistRecordResponse{}
-	for _, m := range userWatchlist {
-		watchlistResponse = append(watchlistResponse, WatchlistRecordResponse{
-			ID:        m.ID,
-			MovieID:   m.MovieID,
-			UserID:    m.UserID,
-			CreatedAt: m.CreatedAt,
-		})
+	watchlistResponse := []types.WatchlistResponse{}
+	for _, w := range userWatchlist {
+		movie, _ := cfg.DB.GetMovieById(r.Context(), w.MovieID)
+		m, _ := utils.DbMovieTypeToJson(movie)
+		watchlist := utils.DbWatchlistToJson(w, m)
+		watchlistResponse = append(watchlistResponse, watchlist)
 	}
 
 	respondWithJson(w, http.StatusOK, watchlistResponse)

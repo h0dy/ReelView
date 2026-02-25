@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type MovieReviewResponse struct {
+type MovieReview struct {
 	ID        uuid.UUID `json:"id"`
 	MovieID   uuid.UUID `json:"movie_id"`
 	Review    string    `json:"review"`

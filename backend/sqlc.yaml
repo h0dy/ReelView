@@ -8,6 +8,7 @@ sql:
       - "internal/sql/schema/004_movie_diaries.sql"
       - "internal/sql/schema/005_add_name_col.sql"
       - "internal/sql/schema/006_watchlists.sql"
+      - "internal/sql/schema/007_movies.sql"
     queries: "internal/sql/queries"
     engine: "postgresql"
     gen:

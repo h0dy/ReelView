@@ -3,26 +3,15 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/h0dy/ReelView/backend/internal/database"
+	"github.com/h0dy/ReelView/backend/internal/types"
+	"github.com/h0dy/ReelView/backend/internal/utils"
 )
 
-type MovieReviewResponse struct {
-	ID        uuid.UUID `json:"id"`
-	MovieID   int32     `json:"movie_id"`
-	Review    string    `json:"review"`
-	Rating    float32   `json:"rating"`
-	IsSpoiler bool      `json:"is_spoiler"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	User      AuthUser  `json:"user"`
-}
-
-func (cfg *APIConfig) HandlerCreateReview(w http.ResponseWriter, r *http.Request) {
+func (cfg APIConfig) HandlerCreateReview(w http.ResponseWriter, r *http.Request) {
 	type reqBody struct {
 		Body      string  `json:"Body"`
 		Rating    float32 `json:"rating"`
@@ -43,16 +32,16 @@ func (cfg *APIConfig) HandlerCreateReview(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	authUser := r.Context().Value(UserContextKey).(*AuthUser)
+	authUser := r.Context().Value(UserContextKey).(*types.AuthUser)
 
 	if review.Rating > 10 || review.Rating < 0 {
 		respondWithErr(w, http.StatusBadRequest, "invalid rating", nil)
 		return
 	}
 
-	movieId, _ := strconv.Atoi(r.PathValue("movieId"))
+	movieId, _ := uuid.Parse(r.PathValue("movieId"))
 
-	if _, err := cfg.TmdbClient.GetMovieDetails(r.Context(), movieId); err != nil {
+	if _, err := cfg.DB.GetMovieById(r.Context(), movieId); err != nil {
 		respondWithErr(w, http.StatusNotFound, "movie doesn't exit", err)
 		return
 	}
@@ -60,7 +49,7 @@ func (cfg *APIConfig) HandlerCreateReview(w http.ResponseWriter, r *http.Request
 	reviewRecord, err := cfg.DB.CreateMovieReview(
 		r.Context(),
 		database.CreateMovieReviewParams{
-			MovieID:   int32(movieId),
+			MovieID:   movieId,
 			UserID:    authUser.ID,
 			Review:    review.Body,
 			Rating:    review.Rating,
@@ -74,32 +63,19 @@ func (cfg *APIConfig) HandlerCreateReview(w http.ResponseWriter, r *http.Request
 		respondWithErr(w, http.StatusInternalServerError, "couldn't create review", err)
 	}
 
-	respondWithJson(w, http.StatusCreated, MovieReviewResponse{
-		ID:      reviewRecord.ID,
-		MovieID: reviewRecord.MovieID,
-		User: AuthUser{
-			ID:        authUser.ID,
-			Username:  authUser.Username,
-			Name:      authUser.Name,
-			Email:     authUser.Email,
-			IsPremium: authUser.IsPremium,
-		},
-		Review:    reviewRecord.Review,
-		Rating:    review.Rating,
-		IsSpoiler: review.IsSpoiler,
-		CreatedAt: reviewRecord.CreatedAt,
-		UpdatedAt: reviewRecord.UpdatedAt,
-	})
+	reviewResponse := utils.DbReviewTypeToJson(reviewRecord, *authUser)
+
+	respondWithJson(w, http.StatusCreated, reviewResponse)
 }
 
-func (cfg *APIConfig) HandlerDeleteReview(w http.ResponseWriter, r *http.Request) {
+func (cfg APIConfig) HandlerDeleteReview(w http.ResponseWriter, r *http.Request) {
 	reviewId, err := uuid.Parse(r.PathValue("reviewId"))
 	if err != nil {
 		respondWithErr(w, http.StatusBadRequest, "invalid review id", err)
 		return
 	}
 
-	user := r.Context().Value(UserContextKey).(*AuthUser)
+	user := r.Context().Value(UserContextKey).(*types.AuthUser)
 
 	review, err := cfg.DB.GetSingleMovieReview(r.Context(), reviewId)
 	if err != nil {
@@ -115,10 +91,10 @@ func (cfg *APIConfig) HandlerDeleteReview(w http.ResponseWriter, r *http.Request
 		respondWithErr(w, http.StatusInternalServerError, "something went wrong", err)
 		return
 	}
-	respondWithJson(w, http.StatusNoContent, struct{}{})
+	respondWithJson(w, http.StatusNoContent, nil)
 }
 
-func (cfg *APIConfig) HandlerUpdateReview(w http.ResponseWriter, r *http.Request) {
+func (cfg APIConfig) HandlerUpdateReview(w http.ResponseWriter, r *http.Request) {
 	type reqBody struct {
 		Body      string  `json:"Body"`
 		Rating    float32 `json:"rating"`
@@ -146,7 +122,7 @@ func (cfg *APIConfig) HandlerUpdateReview(w http.ResponseWriter, r *http.Request
 			err)
 		return
 	}
-	authUser := r.Context().Value(UserContextKey).(*AuthUser)
+	authUser := r.Context().Value(UserContextKey).(*types.AuthUser)
 	if currentReview.UserID != authUser.ID {
 		respondWithErr(w, http.StatusUnauthorized, "Unauthorized", nil)
 		return
@@ -166,49 +142,21 @@ func (cfg *APIConfig) HandlerUpdateReview(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	respondWithJson(w, http.StatusOK, MovieReviewResponse{
-		ID:        updatedReview.ID,
-		MovieID:   updatedReview.MovieID,
-		User:      *authUser,
-		Review:    updatedReview.Review,
-		Rating:    updatedReview.Rating,
-		IsSpoiler: updatedReview.IsSpoiler,
-		CreatedAt: updatedReview.CreatedAt,
-		UpdatedAt: updatedReview.UpdatedAt,
-	})
+	reviewResponse := utils.DbReviewTypeToJson(updatedReview, *authUser)
+
+	respondWithJson(w, http.StatusOK, reviewResponse)
 }
 
-func (cfg *APIConfig) HandlerGetMovieReviews(w http.ResponseWriter, r *http.Request) {
-	movieId, _ := strconv.Atoi(r.PathValue("movieId"))
-	reviews, err := cfg.DB.GetMovieReviews(r.Context(), int32(movieId))
-	if err != nil {
-		return
-	}
+func (cfg APIConfig) HandlerGetMovieReviews(w http.ResponseWriter, r *http.Request) {
+	movieId, _ := uuid.Parse(r.PathValue("movieId"))
+	reviewsRecord, _ := cfg.DB.GetMovieReviews(r.Context(), movieId)
 
-	reviewsResponse := []MovieReviewResponse{}
-	for _, review := range reviews {
-		reviewsResponse = append(reviewsResponse, MovieReviewResponse{
-			ID:        review.ID,
-			MovieID:   review.MovieID,
-			Review:    review.Review,
-			Rating:    review.Rating,
-			IsSpoiler: review.IsSpoiler,
-			CreatedAt: review.CreatedAt,
-			UpdatedAt: review.UpdatedAt,
-			User: AuthUser{
-				ID:        review.UserID,
-				Username:  review.UserUsername,
-				Name:      review.UserName,
-				Email:     review.UserEmail,
-				IsPremium: review.UserIsPremium,
-			},
-		})
-	}
+	reviews := utils.DbReviewsTypeToJson(reviewsRecord)
 
-	respondWithJson(w, http.StatusOK, reviewsResponse)
+	respondWithJson(w, http.StatusOK, reviews)
 }
 
-func (cfg *APIConfig) HandlerGetSingleReview(w http.ResponseWriter, r *http.Request) {
+func (cfg APIConfig) HandlerGetSingleReview(w http.ResponseWriter, r *http.Request) {
 	reviewId, err := uuid.Parse(r.PathValue("reviewId"))
 	if err != nil {
 		respondWithErr(w, http.StatusBadRequest, "invalid review id", err)
@@ -224,23 +172,10 @@ func (cfg *APIConfig) HandlerGetSingleReview(w http.ResponseWriter, r *http.Requ
 		respondWithErr(w, http.StatusInternalServerError, "couldn't get user, something went wrong", err)
 		return
 	}
+	userResponse := utils.DbUserToJson(user)
+	reviewResponse := utils.DbReviewTypeToJson(review, userResponse)
 
-	respondWithJson(w, http.StatusOK, MovieReviewResponse{
-		ID:      review.ID,
-		MovieID: review.MovieID,
-		User: AuthUser{
-			ID:        user.ID,
-			Username:  user.Username,
-			Name:      user.Name,
-			Email:     user.Username,
-			IsPremium: user.IsPremium,
-		},
-		Review:    review.Review,
-		Rating:    review.Rating,
-		IsSpoiler: review.IsSpoiler,
-		CreatedAt: review.CreatedAt,
-		UpdatedAt: review.UpdatedAt,
-	})
+	respondWithJson(w, http.StatusOK, reviewResponse)
 }
 
 func (cfg *APIConfig) HandlerGetUserReviews(w http.ResponseWriter, r *http.Request) {
@@ -263,24 +198,11 @@ func (cfg *APIConfig) HandlerGetUserReviews(w http.ResponseWriter, r *http.Reque
 
 	w.Header().Set("Content-Type", "application/json")
 
-	reviewsResponse := []MovieReviewResponse{}
-	for _, review := range reviews {
-		reviewsResponse = append(reviewsResponse, MovieReviewResponse{
-			ID:      review.ID,
-			MovieID: review.MovieID,
-			User: AuthUser{
-				ID:        user.ID,
-				Username:  user.Username,
-				Name:      user.Username,
-				Email:     user.Email,
-				IsPremium: user.IsPremium,
-			},
-			Review:    review.Review,
-			Rating:    review.Rating,
-			IsSpoiler: review.IsSpoiler,
-			CreatedAt: review.CreatedAt,
-			UpdatedAt: review.UpdatedAt,
-		})
+	reviewsResponse := []types.MovieReview{}
+	authUser := utils.DbUserToJson(user)
+	for _, r := range reviews {
+		review := utils.DbReviewTypeToJson(r, authUser)
+		reviewsResponse = append(reviewsResponse, review)
 	}
 
 	respondWithJson(w, http.StatusOK, reviewsResponse)

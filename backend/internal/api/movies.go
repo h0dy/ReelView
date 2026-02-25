@@ -1,11 +1,13 @@
 package api
 
 import (
+	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 
-	"github.com/h0dy/ReelView/backend/internal/client"
-	"github.com/h0dy/ReelView/backend/internal/database"
+	"github.com/h0dy/ReelView/backend/internal/types"
+	"github.com/h0dy/ReelView/backend/internal/utils"
 )
 
 func (cfg *APIConfig) HandlerGetMovies(w http.ResponseWriter, r *http.Request) {
@@ -25,25 +27,52 @@ func (cfg *APIConfig) HandlerGetMovies(w http.ResponseWriter, r *http.Request) {
 }
 
 func (cfg *APIConfig) HandlerGetMovieDetails(w http.ResponseWriter, r *http.Request) {
-	movieId, _ := strconv.Atoi(r.PathValue("movieId"))
+	tmdbId, _ := strconv.Atoi(r.PathValue("tmdbId"))
 
 	type response struct {
-		Movie   client.MovieDetails           `json:"movie"`
-		Reviews []database.GetMovieReviewsRow `json:"review"`
+		Movie   types.Movie         `json:"movie"`
+		Reviews []types.MovieReview `json:"reviews"`
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	defer r.Body.Close()
 
-	movie, err := cfg.TmdbClient.GetMovieDetails(r.Context(), movieId)
+	movieRecord, err := cfg.DB.GetMovieByTmdbId(r.Context(), int32(tmdbId))
 	if err != nil {
-		respondWithErr(w, http.StatusNotFound, "couldn't find a movie", err)
+		// upsert into db
+		movieRecord, err = cfg.Utils.AddMovieToDB(r.Context(), tmdbId)
+		if err != nil {
+
+			if errors.Is(err, utils.ErrMovieNotFound) {
+				respondWithErr(w, http.StatusNotFound, "movie doesn't exit", err)
+				return
+			}
+
+			respondWithErr(w, http.StatusInternalServerError, "something went wrong with getting couldn't get the movie", err)
+			return
+		}
 		return
 	}
-	movieReviews, _ := cfg.DB.GetMovieReviews(r.Context(), int32(movieId))
+
+	var movieGenres []types.Genre
+	if movieRecord.Genres.Valid {
+		if err := json.Unmarshal(movieRecord.Genres.RawMessage, &movieGenres); err != nil {
+			respondWithErr(w, http.StatusInternalServerError, "something went wrong. Couldn't get genres", err)
+			return
+		}
+	}
+
+	movieReviews, _ := cfg.DB.GetMovieReviews(r.Context(), movieRecord.ID)
+	reviews := utils.DbReviewsTypeToJson(movieReviews)
+
+	movie, err := utils.DbMovieTypeToJson(movieRecord)
+	if err != nil {
+		respondWithErr(w, http.StatusInternalServerError, "something went wrong", err)
+		return
+	}
 
 	respondWithJson(w, http.StatusOK, response{
 		Movie:   movie,
-		Reviews: movieReviews,
+		Reviews: reviews,
 	})
 }

@@ -4,7 +4,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type MovieResponse struct {
+type Movie struct {
 	ID            uuid.UUID `json:"id"`
 	BackdropPath  string    `json:"backdrop_path"`
 	Genre         []Genre   `json:"genre"`

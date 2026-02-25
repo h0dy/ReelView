@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/h0dy/ReelView/backend/internal/auth"
+	"github.com/h0dy/ReelView/backend/internal/types"
 )
 
 type contextKey string
@@ -32,7 +33,7 @@ func (cfg *APIConfig) JWTAuth(jwtSecret string) func(http.Handler) http.Handler 
 				return
 			}
 
-			authUser := &AuthUser{
+			authUser := &types.AuthUser{
 				ID:        user.ID,
 				CreatedAt: user.CreatedAt,
 				UpdatedAt: user.UpdatedAt,

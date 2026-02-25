@@ -4,47 +4,33 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/h0dy/ReelView/backend/internal/auth"
 	"github.com/h0dy/ReelView/backend/internal/database"
+	"github.com/h0dy/ReelView/backend/internal/types"
+	"github.com/h0dy/ReelView/backend/internal/utils"
 )
 
-type AuthUser struct { // User strut to hold json response
-	ID        uuid.UUID `json:"id"`
-	Username  string    `json:"username"`
-	Name      string    `json:"name"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	Email     string    `json:"email"`
-	IsPremium bool      `json:"is_premium"`
-}
-
-func (cfg *APIConfig) HandlerGetUser(w http.ResponseWriter, r *http.Request) {
+func (cfg APIConfig) HandlerGetUser(w http.ResponseWriter, r *http.Request) {
 	userId, err := uuid.Parse(r.PathValue("userId"))
 	if err != nil {
 		respondWithErr(w, http.StatusBadRequest, "invalid user id", err)
 		return
 	}
 
-	user, err := cfg.DB.GetUserByID(r.Context(), userId)
+	userRecord, err := cfg.DB.GetUserByID(r.Context(), userId)
 	if err != nil {
 		respondWithErr(w, http.StatusNotFound, "couldn't find user", err)
 		return
 	}
 
-	respondWithJson(w, http.StatusCreated, AuthUser{
-		ID:        user.ID,
-		Name:      user.Name,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
-		Email:     user.Email,
-		IsPremium: user.IsPremium,
-	})
+	user := utils.DbUserToJson(userRecord)
+
+	respondWithJson(w, http.StatusCreated, user)
 }
 
-func (cfg *APIConfig) HandlerCreateUser(w http.ResponseWriter, r *http.Request) {
+func (cfg APIConfig) HandlerCreateUser(w http.ResponseWriter, r *http.Request) {
 	type reqBody struct {
 		Email    string `json:"email"`
 		Username string `json:"username"`
@@ -77,7 +63,7 @@ func (cfg *APIConfig) HandlerCreateUser(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	user, err := cfg.DB.CreateUser(r.Context(), database.CreateUserParams{
+	userRecord, err := cfg.DB.CreateUser(r.Context(), database.CreateUserParams{
 		Email:          body.Email,
 		Username:       body.Username,
 		HashedPassword: hashedPassword,
@@ -98,17 +84,12 @@ func (cfg *APIConfig) HandlerCreateUser(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	respondWithJson(w, http.StatusCreated, AuthUser{
-		ID:        user.ID,
-		Name:      user.Name,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
-		Email:     user.Email,
-		IsPremium: user.IsPremium,
-	})
+	user := utils.DbUserToJson(userRecord)
+
+	respondWithJson(w, http.StatusCreated, user)
 }
 
-func (cfg *APIConfig) HandlerUpdateUser(w http.ResponseWriter, r *http.Request) {
+func (cfg APIConfig) HandlerUpdateUser(w http.ResponseWriter, r *http.Request) {
 	type reqBody struct {
 		Email     string `json:"email"`
 		Username  string `json:"username"`
@@ -125,7 +106,7 @@ func (cfg *APIConfig) HandlerUpdateUser(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	user := r.Context().Value(UserContextKey).(*AuthUser)
+	user := r.Context().Value(UserContextKey).(*types.AuthUser)
 	updatedUser, err := cfg.DB.UpdateUser(r.Context(), database.UpdateUserParams{
 		ID:        user.ID,
 		Name:      body.Name,
@@ -138,12 +119,6 @@ func (cfg *APIConfig) HandlerUpdateUser(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	respondWithJson(w, http.StatusOK, AuthUser{
-		ID:        updatedUser.ID,
-		Name:      updatedUser.Name,
-		CreatedAt: updatedUser.CreatedAt,
-		UpdatedAt: updatedUser.UpdatedAt,
-		Email:     updatedUser.Email,
-		IsPremium: updatedUser.IsPremium,
-	})
+	userResponse := utils.DbUserToJson(updatedUser)
+	respondWithJson(w, http.StatusOK, userResponse)
 }

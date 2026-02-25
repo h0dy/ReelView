@@ -19,7 +19,7 @@ RETURNING id, movie_id, user_id, review, rating, is_spoiler, created_at, updated
 `
 
 type CreateMovieReviewParams struct {
-	MovieID   int32
+	MovieID   uuid.UUID
 	UserID    uuid.UUID
 	Review    string
 	Rating    float32
@@ -78,7 +78,7 @@ WHERE r.movie_id = $1
 
 type GetMovieReviewsRow struct {
 	ID            uuid.UUID
-	MovieID       int32
+	MovieID       uuid.UUID
 	Review        string
 	Rating        float32
 	IsSpoiler     bool
@@ -91,7 +91,7 @@ type GetMovieReviewsRow struct {
 	UserIsPremium bool
 }
 
-func (q *Queries) GetMovieReviews(ctx context.Context, movieID int32) ([]GetMovieReviewsRow, error) {
+func (q *Queries) GetMovieReviews(ctx context.Context, movieID uuid.UUID) ([]GetMovieReviewsRow, error) {
 	rows, err := q.db.QueryContext(ctx, getMovieReviews, movieID)
 	if err != nil {
 		return nil, err
