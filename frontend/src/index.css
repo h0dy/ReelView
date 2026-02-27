@@ -2,6 +2,12 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@theme {
+  --breakpoint-2xl: initial;
+  --breakpoint-xl: initial;
+  --breakpoint-xs: 30rem;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
