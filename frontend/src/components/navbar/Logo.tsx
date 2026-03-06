@@ -4,7 +4,7 @@ const Logo = () => {
   return (
     <Link to={"/"}>
       <h3 className="ml-2 font-bold text-foreground capitalize hover:underline">
-        ReelView
+        Reel<span className="text-primary">View</span>
       </h3>
     </Link>
   );

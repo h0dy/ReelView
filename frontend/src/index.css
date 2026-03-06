@@ -1,10 +1,14 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "@fontsource-variable/jetbrains-mono";
+
+body {
+  font-family: 'JetBrains Mono Variable', monospace;
+}
 
 @theme {
   --breakpoint-2xl: initial;
-  --breakpoint-xl: initial;
   --breakpoint-xs: 30rem;
 }
 

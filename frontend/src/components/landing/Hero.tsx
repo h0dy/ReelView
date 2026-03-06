@@ -5,9 +5,9 @@ const description =
 
 const Hero = () => {
   return (
-    <section className="mx-auto mt-20 grid place-items-center">
+    <section className="mx-auto mt-10 grid place-items-center">
       <h1 className="lg:text-4xl sm:text-3xl text-2xl font-bold capitalize">
-        ReelView
+        Reel<span className="text-primary">View</span>
       </h1>
       <HeroDescription text={description} />
     </section>
