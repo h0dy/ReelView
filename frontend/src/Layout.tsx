@@ -6,7 +6,7 @@ const Layout = () => {
     <>
       <main className="mx-auto container">
         <Navbar />
-        <div className="px-5">
+        <div className="">
           <Outlet />
         </div>
       </main>
