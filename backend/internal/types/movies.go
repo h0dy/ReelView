@@ -15,4 +15,7 @@ type Movie struct {
 	ReleaseDate   string    `json:"release_date"`
 	Title         string    `json:"title"`
 	VoteAverage   float64   `json:"vote_average"`
+	Tagline       string    `json:"tagline"`
+	Status        string    `json:"status"`
+	Runtime       int       `json:"runtime"`
 }
