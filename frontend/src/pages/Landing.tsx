@@ -1,6 +1,6 @@
-import Hero from "@/components/landing/Hero";
-import TopTodaySection from "@/components/landing/TopTodaySection";
-import TopWeekSection from "@/components/landing/TopWeekSection";
+import Hero from "@/components/landing-page/Hero";
+import TopTodaySection from "@/components/landing-page/TopTodaySection";
+import TopWeekSection from "@/components/landing-page/TopWeekSection";
 
 const Landing = () => {
   return (
