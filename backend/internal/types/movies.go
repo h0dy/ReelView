@@ -6,16 +6,19 @@ import (
 
 type Movie struct {
 	ID            uuid.UUID `json:"id"`
-	BackdropPath  string    `json:"backdrop_path"`
-	Genre         []Genre   `json:"genre"`
+	ImdbID        string    `json:"imdb_id"`
 	TmdbID        int       `json:"tmdb_id"`
 	OriginalTitle string    `json:"original_title"`
-	Overview      string    `json:"overview"`
-	PosterPath    string    `json:"poster_path"`
-	ReleaseDate   string    `json:"release_date"`
 	Title         string    `json:"title"`
+	PosterPath    string    `json:"poster_path"`
+	BackdropPath  string    `json:"backdrop_path"`
+	Overview      string    `json:"overview"`
+	ReleaseDate   string    `json:"release_date"`
 	VoteAverage   float64   `json:"vote_average"`
-	Tagline       string    `json:"tagline"`
-	Status        string    `json:"status"`
+	VoteCount     int       `json:"vote_count"`
+	Revenue       int       `json:"revenue"`
+	Homepage      string    `json:"homepage"`
+	Genre         []Genre   `json:"genre"`
 	Runtime       int       `json:"runtime"`
+	Tagline       string    `json:"tagline"`
 }

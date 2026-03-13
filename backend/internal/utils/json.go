@@ -18,16 +18,19 @@ func DbMovieTypeToJson(dbMovie database.Movie) (types.Movie, error) {
 	return types.Movie{
 		ID:            dbMovie.ID,
 		TmdbID:        int(dbMovie.TmdbID),
+		ImdbID:        dbMovie.ImdbID,
 		Title:         dbMovie.Title,
 		OriginalTitle: dbMovie.OriginalTitle,
-		BackdropPath:  dbMovie.BackdropPath,
-		Genre:         movieGenres,
-		Overview:      dbMovie.OriginalTitle,
 		PosterPath:    dbMovie.PosterPath,
+		BackdropPath:  dbMovie.BackdropPath,
+		Overview:      dbMovie.OriginalTitle,
 		ReleaseDate:   dbMovie.ReleaseDate.String(),
 		VoteAverage:   dbMovie.VoteAverage,
+		VoteCount:     int(dbMovie.VoteCount),
+		Revenue:       int(dbMovie.Revenue),
+		Homepage:      dbMovie.Homepage,
 		Tagline:       dbMovie.Tagline,
-		Status:        dbMovie.Status,
+		Genre:         movieGenres,
 		Runtime:       int(dbMovie.Runtime),
 	}, nil
 }

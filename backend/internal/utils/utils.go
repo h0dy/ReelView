@@ -57,9 +57,12 @@ func (u *UtilsConfig) AddMovieToDB(ctx context.Context, tmdb_id int) (database.M
 		ReleaseDate:   releaseDate,
 		VoteAverage:   movie.VoteAverage,
 		Runtime:       int32(movie.Runtime),
-		Status:        movie.Status,
 		Tagline:       movie.Tagline,
-		Column9:       genresJSON,
+		ImdbID:        movie.ImdbID,
+		VoteCount:     int32(movie.VoteCount),
+		Revenue:       int64(movie.Revenue),
+		Homepage:      movie.Homepage,
+		Column13:      genresJSON,
 	})
 	if err != nil {
 		log.Fatalf("Error in AddMovieToDB func in utils\nError:%v\n", err)
@@ -67,7 +70,3 @@ func (u *UtilsConfig) AddMovieToDB(ctx context.Context, tmdb_id int) (database.M
 	}
 	return movieRecord, nil
 }
-
-
-
-

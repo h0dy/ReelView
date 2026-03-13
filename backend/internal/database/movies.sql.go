@@ -17,6 +17,7 @@ const addMovie = `-- name: AddMovie :one
 INSERT INTO movies (
     id,
     tmdb_id,
+    imdb_id,
     title,
     original_title,
     poster_path,
@@ -24,26 +25,31 @@ INSERT INTO movies (
     overview,
     release_date,
     vote_average,
+    vote_count,
+    revenue,
+    homepage,
     genres,
     runtime,
-    status,
     tagline,
     created_at
 ) VALUES (
-    gen_random_uuid(),              
-    $1,                              
-    $2,                              
-    $3,                              
-    $4,                              
-    $5,                              
-    $6,                              
-    $7,                              
-    $8,                              
-    $9::jsonb,                       
-    $10,                             
-    $11,                             
-    $12,                             
-    NOW()                            
+    gen_random_uuid(),
+    $1,
+    $2,
+    $3,
+    $4,
+    $5,
+    $6,
+    $7,
+    $8,
+    $9,          
+    $10,
+    $11,
+    $12,
+    $13::jsonb,  
+    $14,
+    $15,
+    NOW()
 )
 ON CONFLICT (tmdb_id) DO UPDATE
 SET 
@@ -56,13 +62,13 @@ SET
     vote_average = EXCLUDED.vote_average,
     genres = EXCLUDED.genres,
     runtime = EXCLUDED.runtime,
-    status = EXCLUDED.status,
     tagline = EXCLUDED.tagline
-RETURNING id, tmdb_id, title, original_title, poster_path, backdrop_path, overview, release_date, vote_average, genres, runtime, status, tagline, created_at
+RETURNING id, tmdb_id, imdb_id, title, original_title, poster_path, backdrop_path, overview, release_date, vote_average, vote_count, revenue, homepage, genres, runtime, tagline, created_at
 `
 
 type AddMovieParams struct {
 	TmdbID        int32
+	ImdbID        string
 	Title         string
 	OriginalTitle string
 	PosterPath    string
@@ -70,15 +76,18 @@ type AddMovieParams struct {
 	Overview      string
 	ReleaseDate   time.Time
 	VoteAverage   float64
-	Column9       json.RawMessage
+	VoteCount     int32
+	Revenue       int64
+	Homepage      string
+	Column13      json.RawMessage
 	Runtime       int32
-	Status        string
 	Tagline       string
 }
 
 func (q *Queries) AddMovie(ctx context.Context, arg AddMovieParams) (Movie, error) {
 	row := q.db.QueryRowContext(ctx, addMovie,
 		arg.TmdbID,
+		arg.ImdbID,
 		arg.Title,
 		arg.OriginalTitle,
 		arg.PosterPath,
@@ -86,15 +95,18 @@ func (q *Queries) AddMovie(ctx context.Context, arg AddMovieParams) (Movie, erro
 		arg.Overview,
 		arg.ReleaseDate,
 		arg.VoteAverage,
-		arg.Column9,
+		arg.VoteCount,
+		arg.Revenue,
+		arg.Homepage,
+		arg.Column13,
 		arg.Runtime,
-		arg.Status,
 		arg.Tagline,
 	)
 	var i Movie
 	err := row.Scan(
 		&i.ID,
 		&i.TmdbID,
+		&i.ImdbID,
 		&i.Title,
 		&i.OriginalTitle,
 		&i.PosterPath,
@@ -102,9 +114,11 @@ func (q *Queries) AddMovie(ctx context.Context, arg AddMovieParams) (Movie, erro
 		&i.Overview,
 		&i.ReleaseDate,
 		&i.VoteAverage,
+		&i.VoteCount,
+		&i.Revenue,
+		&i.Homepage,
 		&i.Genres,
 		&i.Runtime,
-		&i.Status,
 		&i.Tagline,
 		&i.CreatedAt,
 	)
@@ -112,7 +126,7 @@ func (q *Queries) AddMovie(ctx context.Context, arg AddMovieParams) (Movie, erro
 }
 
 const getMovieById = `-- name: GetMovieById :one
-SELECT id, tmdb_id, title, original_title, poster_path, backdrop_path, overview, release_date, vote_average, genres, runtime, status, tagline, created_at FROM movies WHERE id = $1
+SELECT id, tmdb_id, imdb_id, title, original_title, poster_path, backdrop_path, overview, release_date, vote_average, vote_count, revenue, homepage, genres, runtime, tagline, created_at FROM movies WHERE id = $1
 `
 
 func (q *Queries) GetMovieById(ctx context.Context, id uuid.UUID) (Movie, error) {
@@ -121,6 +135,7 @@ func (q *Queries) GetMovieById(ctx context.Context, id uuid.UUID) (Movie, error)
 	err := row.Scan(
 		&i.ID,
 		&i.TmdbID,
+		&i.ImdbID,
 		&i.Title,
 		&i.OriginalTitle,
 		&i.PosterPath,
@@ -128,9 +143,11 @@ func (q *Queries) GetMovieById(ctx context.Context, id uuid.UUID) (Movie, error)
 		&i.Overview,
 		&i.ReleaseDate,
 		&i.VoteAverage,
+		&i.VoteCount,
+		&i.Revenue,
+		&i.Homepage,
 		&i.Genres,
 		&i.Runtime,
-		&i.Status,
 		&i.Tagline,
 		&i.CreatedAt,
 	)
@@ -138,53 +155,16 @@ func (q *Queries) GetMovieById(ctx context.Context, id uuid.UUID) (Movie, error)
 }
 
 const getMovieByTmdbId = `-- name: GetMovieByTmdbId :one
-
-SELECT id, tmdb_id, title, original_title, poster_path, backdrop_path, overview, release_date, vote_average, genres, runtime, status, tagline, created_at FROM movies WHERE tmdb_id = $1
+SELECT id, tmdb_id, imdb_id, title, original_title, poster_path, backdrop_path, overview, release_date, vote_average, vote_count, revenue, homepage, genres, runtime, tagline, created_at FROM movies WHERE tmdb_id = $1
 `
 
-// -- name: AddMovie :one
-// INSERT INTO movies (
-//
-//	id,
-//	tmdb_id,
-//	title,
-//	original_title,
-//	poster_path,
-//	backdrop_path,
-//	overview,
-//	release_date,
-//	vote_average,
-//	genres,
-//	runtime,
-//	status,
-//	tagline,
-//	created_at
-//
-// ) VALUES (
-//
-//	gen_random_uuid(),
-//	$1,
-//	$2,
-//	$3,
-//	$4,
-//	$5,
-//	$6,
-//	$7,
-//	$8,
-//	$9::jsonb,
-//	$10,
-//	$11,
-//	$12,
-//	NOW()
-//
-// )
-// RETURNING *;
 func (q *Queries) GetMovieByTmdbId(ctx context.Context, tmdbID int32) (Movie, error) {
 	row := q.db.QueryRowContext(ctx, getMovieByTmdbId, tmdbID)
 	var i Movie
 	err := row.Scan(
 		&i.ID,
 		&i.TmdbID,
+		&i.ImdbID,
 		&i.Title,
 		&i.OriginalTitle,
 		&i.PosterPath,
@@ -192,9 +172,11 @@ func (q *Queries) GetMovieByTmdbId(ctx context.Context, tmdbID int32) (Movie, er
 		&i.Overview,
 		&i.ReleaseDate,
 		&i.VoteAverage,
+		&i.VoteCount,
+		&i.Revenue,
+		&i.Homepage,
 		&i.Genres,
 		&i.Runtime,
-		&i.Status,
 		&i.Tagline,
 		&i.CreatedAt,
 	)

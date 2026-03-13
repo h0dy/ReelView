@@ -8,6 +8,7 @@ SELECT * FROM movies WHERE id = $1;
 INSERT INTO movies (
     id,
     tmdb_id,
+    imdb_id,
     title,
     original_title,
     poster_path,
@@ -15,26 +16,31 @@ INSERT INTO movies (
     overview,
     release_date,
     vote_average,
+    vote_count,
+    revenue,
+    homepage,
     genres,
     runtime,
-    status,
     tagline,
     created_at
 ) VALUES (
-    gen_random_uuid(),              
-    $1,                              
-    $2,                              
-    $3,                              
-    $4,                              
-    $5,                              
-    $6,                              
-    $7,                              
-    $8,                              
-    $9::jsonb,                       
-    $10,                             
-    $11,                             
-    $12,                             
-    NOW()                            
+    gen_random_uuid(),
+    $1,
+    $2,
+    $3,
+    $4,
+    $5,
+    $6,
+    $7,
+    $8,
+    $9,          
+    $10,
+    $11,
+    $12,
+    $13::jsonb,  
+    $14,
+    $15,
+    NOW()
 )
 ON CONFLICT (tmdb_id) DO UPDATE
 SET 
@@ -47,7 +53,6 @@ SET
     vote_average = EXCLUDED.vote_average,
     genres = EXCLUDED.genres,
     runtime = EXCLUDED.runtime,
-    status = EXCLUDED.status,
     tagline = EXCLUDED.tagline
 RETURNING *;
 

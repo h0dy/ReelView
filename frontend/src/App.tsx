@@ -1,10 +1,10 @@
 import { Suspense } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import Loader from "./components/global/Loader";
 import Layout from "./Layout";
 import Landing from "./pages/Landing";
-import Movie from "./pages/Movie";
+import MoviePage from "./pages/MoviePage";
 import SignUp from "./pages/SignUp";
-import Loader from "./components/global/Loader";
 
 const router = createBrowserRouter([
   {
@@ -23,7 +23,7 @@ const router = createBrowserRouter([
         path: "movies/:id",
         element: (
           <Suspense fallback={<Loader />}>
-            <Movie />
+            <MoviePage />
           </Suspense>
         ),
       },

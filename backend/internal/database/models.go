@@ -15,6 +15,7 @@ import (
 type Movie struct {
 	ID            uuid.UUID
 	TmdbID        int32
+	ImdbID        string
 	Title         string
 	OriginalTitle string
 	PosterPath    string
@@ -22,9 +23,11 @@ type Movie struct {
 	Overview      string
 	ReleaseDate   time.Time
 	VoteAverage   float64
+	VoteCount     int32
+	Revenue       int64
+	Homepage      string
 	Genres        pqtype.NullRawMessage
 	Runtime       int32
-	Status        string
 	Tagline       string
 	CreatedAt     time.Time
 }

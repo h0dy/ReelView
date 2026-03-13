@@ -1,7 +1,6 @@
 package client
 
 type Movie struct {
-	// Adult            bool    `json:"adult"`
 	BackdropPath     string   `json:"backdrop_path"`
 	GenreIds         []int    `json:"genre_ids"`
 	Genre            []string `json:"genre"`
@@ -9,12 +8,15 @@ type Movie struct {
 	OriginalLanguage string   `json:"original_language"`
 	OriginalTitle    string   `json:"original_title"`
 	Overview         string   `json:"overview"`
-	// Popularity       float64 `json:"popularity"`
-	PosterPath  string `json:"poster_path"`
-	ReleaseDate string `json:"release_date"`
-	Title       string `json:"title"`
+	PosterPath  string  `json:"poster_path"`
+	ReleaseDate string  `json:"release_date"`
+	Title       string  `json:"title"`
 	VoteAverage float64 `json:"vote_average"`
 	VoteCount   int     `json:"vote_count"`
+	Tagline     string  `json:"tagline"`
+	TmdbID      int     `json:"tmdb_id"`
+	Runtime     int     `json:"runtime"`
+	Status      string  `json:"status"`
 }
 
 type Movies struct {

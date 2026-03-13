@@ -5,7 +5,7 @@ import MovieUserAction from "@/components/movie-page/MovieUserAction";
 import type { Movie } from "@/types/movies";
 import { redirect, useLocation } from "react-router-dom";
 
-const Movie = () => {
+const MoviePage = () => {
   const { state } = useLocation();
   const movie: Movie = state?.movie;
 
@@ -33,4 +33,4 @@ const Movie = () => {
   );
 };
 
-export default Movie;
+export default MoviePage;
