@@ -23,7 +23,7 @@ func DbMovieTypeToJson(dbMovie database.Movie) (types.Movie, error) {
 		OriginalTitle: dbMovie.OriginalTitle,
 		PosterPath:    dbMovie.PosterPath,
 		BackdropPath:  dbMovie.BackdropPath,
-		Overview:      dbMovie.OriginalTitle,
+		Overview:      dbMovie.Overview,
 		ReleaseDate:   dbMovie.ReleaseDate.String(),
 		VoteAverage:   dbMovie.VoteAverage,
 		VoteCount:     int(dbMovie.VoteCount),

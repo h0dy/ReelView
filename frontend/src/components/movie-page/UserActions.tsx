@@ -4,7 +4,7 @@ import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
 import { Textarea } from "../ui/textarea";
 
-const MovieUserAction = () => {
+const UserActions = () => {
   const [inWatchlist, setInWatchlist] = useState(false);
   const [inDiary, setInDiary] = useState(false);
   const [userRating, setUserRating] = useState(0);
@@ -14,7 +14,7 @@ const MovieUserAction = () => {
 
   return (
     <div className="rounded-xl border border-border bg-card p-4 space-y-4">
-      {/* Watchlist + Diary buttons */}
+      {/* Watchlist + Diary */}
       <div className="grid grid-cols-2 gap-2">
         <button
           onClick={() => setInWatchlist((v) => !v)}
@@ -89,7 +89,7 @@ const MovieUserAction = () => {
 
       <Separator />
 
-      {/* Review */}
+      {/* Write a review */}
       <div className="space-y-2">
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           Write a Review
@@ -130,4 +130,4 @@ const MovieUserAction = () => {
   );
 };
 
-export default MovieUserAction;
+export default UserActions;

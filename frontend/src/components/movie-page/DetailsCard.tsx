@@ -1,10 +1,16 @@
-import type { Movie } from "@/types/movies";
+import type { MovieDetail } from "@/types/movies";
 import DetailRow from "./DetailRow";
 
-const MovieDetailsCard = ({ movie }: { movie: Movie }) => {
+const DetailsCard = ({ movie }: { movie: MovieDetail }) => {
   const movieReleaseDate = new Date(movie.release_date);
   const formattedVoteCount = new Intl.NumberFormat().format(movie.vote_count);
   const formattedRating = movie.vote_average.toFixed(1);
+  const formattedRevenue = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(movie.revenue);
 
   return (
     <div className="rounded-xl border border-border bg-card p-4 space-y-1">
@@ -12,11 +18,6 @@ const MovieDetailsCard = ({ movie }: { movie: Movie }) => {
         Details
       </h2>
       <DetailRow label="Original title" value={movie.original_title} />
-      <DetailRow label="Directed By" value={"Robert Eggers"} />
-      <DetailRow
-        label="Language"
-        value={movie.original_language.toUpperCase()}
-      />
       <DetailRow
         label="Release date"
         value={movieReleaseDate.toLocaleDateString("en-US", {
@@ -25,14 +26,18 @@ const MovieDetailsCard = ({ movie }: { movie: Movie }) => {
           year: "numeric",
         })}
       />
-      <DetailRow
-        label="Runtime"
-        value={`${Math.floor(160 / 60)}h ${160 % 60}m`}
-      />
+      {movie.runtime > 0 && (
+        <DetailRow
+          label="Runtime"
+          value={`${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m`}
+        />
+      )}
       <DetailRow label="Vote count" value={formattedVoteCount} />
-      <DetailRow label="Rating" value={`${formattedRating} / 10`} last={true} />
+      <DetailRow label="Rating" value={`${formattedRating} / 10`} />
+
+      <DetailRow label="Box office" value={formattedRevenue} last={true} />
     </div>
   );
 };
 
-export default MovieDetailsCard;
+export default DetailsCard;

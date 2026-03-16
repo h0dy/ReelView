@@ -1,11 +1,12 @@
-import type { Movie } from "@/types/movies";
-import { Play, Share2, Star } from "lucide-react";
-import { Badge } from "../ui/badge";
+import type { MovieDetail } from "@/types/movies";
+import { Clock, Play, Share2, Star } from "lucide-react";
 import { Button } from "../ui/button";
+import { Separator } from "../ui/separator";
 
-const MovieHero = ({ movie }: { movie: Movie }) => {
+const MovieHero = ({ movie }: { movie: MovieDetail }) => {
   const movieReleaseDate = new Date(movie.release_date);
   const formattedRating = movie.vote_average.toFixed(1);
+
   return (
     <div className="relative h-130 w-full overflow-hidden">
       <img
@@ -14,7 +15,6 @@ const MovieHero = ({ movie }: { movie: Movie }) => {
         className="absolute inset-0 h-full w-full object-cover"
       />
 
-      {/* gradient overlays */}
       <div className="absolute inset-0 bg-linear-to-t from-background via-background/40 to-transparent" />
 
       <div className="relative flex h-full max-w-6xl mx-auto px-6 items-end pb-10 gap-8">
@@ -26,9 +26,9 @@ const MovieHero = ({ movie }: { movie: Movie }) => {
             className="w-52 rounded-xl shadow-2xl border border-white/10 object-cover aspect-2/3"
           />
         </div>
+
         {/* info */}
         <div className="flex flex-col gap-3 pb-1">
-          {/* title */}
           <h1 className="text-4xl font-bold leading-tight">
             {movie.title}{" "}
             <span className="text-muted-foreground font-normal text-3xl">
@@ -36,32 +36,14 @@ const MovieHero = ({ movie }: { movie: Movie }) => {
             </span>
           </h1>
 
-          <p className="text-sm text-muted-foreground">
-            Directed by{" "}
-            <span className="text-foreground font-semibold">
-              {"Robert Eggers"}
-            </span>
-          </p>
-
-          <p className="text-sm italic text-muted-foreground">
-            "Can you survive five nights?"
-          </p>
-
-          <div className="flex flex-wrap gap-2">
-            {movie.genre.map((g) => (
-              <Badge
-                key={g}
-                variant="secondary"
-                className="bg-white/10 text-white border-white/20 backdrop-blur-sm hover:bg-white/20"
-              >
-                {g}
-              </Badge>
-            ))}
-          </div>
+          {movie.tagline && (
+            <p className="text-sm italic text-muted-foreground">
+              "{movie.tagline}"
+            </p>
+          )}
 
           {/* meta row */}
           <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            {/* rating */}
             <div className="flex items-center gap-1.5">
               <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
               <span className="text-foreground font-semibold">
@@ -69,6 +51,17 @@ const MovieHero = ({ movie }: { movie: Movie }) => {
               </span>
               <span>/10</span>
             </div>
+            {movie.runtime > 0 && (
+              <>
+                <Separator orientation="vertical" className="h-4" />
+                <div className="flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>
+                    {Math.floor(movie.runtime / 60)}h {movie.runtime % 60}m
+                  </span>
+                </div>
+              </>
+            )}
           </div>
 
           <div className="flex flex-wrap gap-2 mt-2">
@@ -76,6 +69,35 @@ const MovieHero = ({ movie }: { movie: Movie }) => {
               <Play className="w-4 h-4 fill-current" />
               Watch Trailer
             </Button>
+
+            <Button
+              asChild
+              size="sm"
+              className="bg-[#F5C518] hover:bg-[#F5C518]/90 text-black font-black tracking-tight rounded-sm px-2.5 border-0"
+            >
+              <a
+                href={`https://www.imdb.com/title/${movie.imdb_id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                IMDb
+              </a>
+            </Button>
+
+            <Button
+              asChild
+              size="sm"
+              className="bg-[#0d253f] hover:bg-[#0d253f]/90 text-[#01b4e4] font-bold tracking-tight rounded-sm px-2.5 border-0"
+            >
+              <a
+                href={`https://www.themoviedb.org/movie/${movie.tmdb_id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                TMDB
+              </a>
+            </Button>
+
             <Button size="sm" variant="ghost" className="gap-2">
               <Share2 className="w-4 h-4" />
               Share
