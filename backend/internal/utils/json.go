@@ -30,6 +30,7 @@ func DbMovieTypeToJson(dbMovie database.Movie) (types.Movie, error) {
 		Revenue:       int(dbMovie.Revenue),
 		Homepage:      dbMovie.Homepage,
 		Tagline:       dbMovie.Tagline,
+		Trailer:       dbMovie.Trailer,
 		Genre:         movieGenres,
 		Runtime:       int(dbMovie.Runtime),
 	}, nil

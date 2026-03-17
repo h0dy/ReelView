@@ -31,6 +31,7 @@ INSERT INTO movies (
     genres,
     runtime,
     tagline,
+    trailer,
     created_at
 ) VALUES (
     gen_random_uuid(),
@@ -49,6 +50,7 @@ INSERT INTO movies (
     $13::jsonb,  
     $14,
     $15,
+    $16,
     NOW()
 )
 ON CONFLICT (tmdb_id) DO UPDATE
@@ -63,7 +65,7 @@ SET
     genres = EXCLUDED.genres,
     runtime = EXCLUDED.runtime,
     tagline = EXCLUDED.tagline
-RETURNING id, tmdb_id, imdb_id, title, original_title, poster_path, backdrop_path, overview, release_date, vote_average, vote_count, revenue, homepage, genres, runtime, tagline, created_at
+RETURNING id, tmdb_id, imdb_id, title, original_title, poster_path, backdrop_path, overview, release_date, vote_average, vote_count, revenue, homepage, genres, runtime, trailer, tagline, created_at
 `
 
 type AddMovieParams struct {
@@ -82,6 +84,7 @@ type AddMovieParams struct {
 	Column13      json.RawMessage
 	Runtime       int32
 	Tagline       string
+	Trailer       string
 }
 
 func (q *Queries) AddMovie(ctx context.Context, arg AddMovieParams) (Movie, error) {
@@ -101,6 +104,7 @@ func (q *Queries) AddMovie(ctx context.Context, arg AddMovieParams) (Movie, erro
 		arg.Column13,
 		arg.Runtime,
 		arg.Tagline,
+		arg.Trailer,
 	)
 	var i Movie
 	err := row.Scan(
@@ -119,14 +123,24 @@ func (q *Queries) AddMovie(ctx context.Context, arg AddMovieParams) (Movie, erro
 		&i.Homepage,
 		&i.Genres,
 		&i.Runtime,
+		&i.Trailer,
 		&i.Tagline,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
+const deleteAllMovies = `-- name: DeleteAllMovies :exec
+DELETE FROM movies
+`
+
+func (q *Queries) DeleteAllMovies(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, deleteAllMovies)
+	return err
+}
+
 const getMovieById = `-- name: GetMovieById :one
-SELECT id, tmdb_id, imdb_id, title, original_title, poster_path, backdrop_path, overview, release_date, vote_average, vote_count, revenue, homepage, genres, runtime, tagline, created_at FROM movies WHERE id = $1
+SELECT id, tmdb_id, imdb_id, title, original_title, poster_path, backdrop_path, overview, release_date, vote_average, vote_count, revenue, homepage, genres, runtime, trailer, tagline, created_at FROM movies WHERE id = $1
 `
 
 func (q *Queries) GetMovieById(ctx context.Context, id uuid.UUID) (Movie, error) {
@@ -148,6 +162,7 @@ func (q *Queries) GetMovieById(ctx context.Context, id uuid.UUID) (Movie, error)
 		&i.Homepage,
 		&i.Genres,
 		&i.Runtime,
+		&i.Trailer,
 		&i.Tagline,
 		&i.CreatedAt,
 	)
@@ -155,7 +170,7 @@ func (q *Queries) GetMovieById(ctx context.Context, id uuid.UUID) (Movie, error)
 }
 
 const getMovieByTmdbId = `-- name: GetMovieByTmdbId :one
-SELECT id, tmdb_id, imdb_id, title, original_title, poster_path, backdrop_path, overview, release_date, vote_average, vote_count, revenue, homepage, genres, runtime, tagline, created_at FROM movies WHERE tmdb_id = $1
+SELECT id, tmdb_id, imdb_id, title, original_title, poster_path, backdrop_path, overview, release_date, vote_average, vote_count, revenue, homepage, genres, runtime, trailer, tagline, created_at FROM movies WHERE tmdb_id = $1
 `
 
 func (q *Queries) GetMovieByTmdbId(ctx context.Context, tmdbID int32) (Movie, error) {
@@ -177,6 +192,7 @@ func (q *Queries) GetMovieByTmdbId(ctx context.Context, tmdbID int32) (Movie, er
 		&i.Homepage,
 		&i.Genres,
 		&i.Runtime,
+		&i.Trailer,
 		&i.Tagline,
 		&i.CreatedAt,
 	)

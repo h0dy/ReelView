@@ -1,5 +1,7 @@
 package client
 
+import "time"
+
 type Movie struct {
 	BackdropPath     string   `json:"backdrop_path"`
 	GenreIds         []int    `json:"genre_ids"`
@@ -8,15 +10,15 @@ type Movie struct {
 	OriginalLanguage string   `json:"original_language"`
 	OriginalTitle    string   `json:"original_title"`
 	Overview         string   `json:"overview"`
-	PosterPath  string  `json:"poster_path"`
-	ReleaseDate string  `json:"release_date"`
-	Title       string  `json:"title"`
-	VoteAverage float64 `json:"vote_average"`
-	VoteCount   int     `json:"vote_count"`
-	Tagline     string  `json:"tagline"`
-	TmdbID      int     `json:"tmdb_id"`
-	Runtime     int     `json:"runtime"`
-	Status      string  `json:"status"`
+	PosterPath       string   `json:"poster_path"`
+	ReleaseDate      string   `json:"release_date"`
+	Title            string   `json:"title"`
+	VoteAverage      float64  `json:"vote_average"`
+	VoteCount        int      `json:"vote_count"`
+	Tagline          string   `json:"tagline"`
+	TmdbID           int      `json:"tmdb_id"`
+	Runtime          int      `json:"runtime"`
+	Status           string   `json:"status"`
 }
 
 type Movies struct {
@@ -89,4 +91,22 @@ var MovieGenre = map[int]string{
 	53:    "Thriller",
 	10752: "War",
 	37:    "Western",
+}
+
+type MovieTrailers struct {
+	Id      int            `json:"id"`
+	Results []MovieTrailer `json:"results"`
+}
+
+type MovieTrailer struct {
+	Iso6391     string    `json:"iso_639_1"`
+	Iso31661    string    `json:"iso_3166_1"`
+	Name        string    `json:"name"`
+	Key         string    `json:"key"`
+	Site        string    `json:"site"`
+	Size        int       `json:"size"`
+	Type        string    `json:"type"`
+	Official    bool      `json:"official"`
+	PublishedAt time.Time `json:"published_at"`
+	ID          string    `json:"id"`
 }

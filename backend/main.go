@@ -72,7 +72,8 @@ func main() {
 
 	// others
 	mux.HandleFunc("GET /api/healthz", apiConfig.HandlerReadiness)
-	mux.HandleFunc("POST /admin/reset", apiConfig.HandlerReset)
+	mux.HandleFunc("POST /admin/reset", apiConfig.HandlerResetUsers)
+	mux.HandleFunc("POST /admin/resetMovie", apiConfig.HandlerResetMovies)
 
 	// user
 	mux.HandleFunc("POST /api/users", apiConfig.HandlerCreateUser)

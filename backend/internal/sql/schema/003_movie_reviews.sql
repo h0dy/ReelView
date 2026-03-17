@@ -13,4 +13,4 @@ CREATE TABLE movie_reviews(
 );
 
 -- +goose  Down 
-DROP TABLE movie_reviews;
+-- DROP TABLE movie_reviews;

@@ -20,5 +20,6 @@ type Movie struct {
 	Homepage      string    `json:"homepage"`
 	Genre         []Genre   `json:"genre"`
 	Runtime       int       `json:"runtime"`
+	Trailer       string    `json:"trailer"`
 	Tagline       string    `json:"tagline"`
 }

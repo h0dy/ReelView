@@ -15,6 +15,7 @@ CREATE TABLE movies (
     homepage TEXT NOT NULL,
     genres JSONB,                   
     runtime INT NOT NULL,                     
+    trailer TEXT NOT NULL,
     tagline TEXT NOT NULL,            
     created_at TIMESTAMP NOT NULL 
 );

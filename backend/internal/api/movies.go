@@ -42,16 +42,13 @@ func (cfg *APIConfig) HandlerGetMovieDetails(w http.ResponseWriter, r *http.Requ
 		// upsert into db
 		movieRecord, err = cfg.Utils.AddMovieToDB(r.Context(), tmdbId)
 		if err != nil {
-
 			if errors.Is(err, utils.ErrMovieNotFound) {
 				respondWithErr(w, http.StatusNotFound, "movie doesn't exit", err)
 				return
 			}
-
 			respondWithErr(w, http.StatusInternalServerError, "something went wrong with getting couldn't get the movie", err)
 			return
 		}
-		return
 	}
 
 	var movieGenres []types.Genre

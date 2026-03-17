@@ -47,6 +47,12 @@ func (u *UtilsConfig) AddMovieToDB(ctx context.Context, tmdb_id int) (database.M
 		return database.Movie{}, err
 	}
 
+	movieTrailer, err := u.TmdbClient.GetMovieTrailer(ctx, movie.ID)
+	if err != nil {
+		fmt.Printf("Error in GetMovieTrailer func:%v\n", err)
+	}
+	trailer := fmt.Sprintf("https://www.youtube.com/watch?v=%v\n", movieTrailer.Key)
+
 	movieRecord, err := u.DB.AddMovie(ctx, database.AddMovieParams{
 		TmdbID:        int32(movie.ID),
 		Title:         movie.Title,
@@ -62,7 +68,8 @@ func (u *UtilsConfig) AddMovieToDB(ctx context.Context, tmdb_id int) (database.M
 		VoteCount:     int32(movie.VoteCount),
 		Revenue:       int64(movie.Revenue),
 		Homepage:      movie.Homepage,
-		Column13:      genresJSON,
+		Trailer:       trailer,
+		Column13: genresJSON,
 	})
 	if err != nil {
 		log.Fatalf("Error in AddMovieToDB func in utils\nError:%v\n", err)

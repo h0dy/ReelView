@@ -22,6 +22,7 @@ INSERT INTO movies (
     genres,
     runtime,
     tagline,
+    trailer,
     created_at
 ) VALUES (
     gen_random_uuid(),
@@ -40,6 +41,7 @@ INSERT INTO movies (
     $13::jsonb,  
     $14,
     $15,
+    $16,
     NOW()
 )
 ON CONFLICT (tmdb_id) DO UPDATE
@@ -56,3 +58,5 @@ SET
     tagline = EXCLUDED.tagline
 RETURNING *;
 
+-- name: DeleteAllMovies :exec
+DELETE FROM movies;

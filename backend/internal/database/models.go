@@ -28,6 +28,7 @@ type Movie struct {
 	Homepage      string
 	Genres        pqtype.NullRawMessage
 	Runtime       int32
+	Trailer       string
 	Tagline       string
 	CreatedAt     time.Time
 }
