@@ -67,7 +67,9 @@ const MovieHero = ({ movie }: { movie: MovieDetail }) => {
           <div className="flex flex-wrap gap-2 mt-2">
             <Button size="sm" className="gap-2">
               <Play className="w-4 h-4 fill-current" />
-              Watch Trailer
+              <a href={movie.trailer} target="_blank" rel="noopener noreferrer">
+                Watch Trailer
+              </a>
             </Button>
 
             <Button

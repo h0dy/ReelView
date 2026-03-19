@@ -23,6 +23,7 @@ export type MovieDetail = {
     id: number;
     name: string;
   }>;
+  trailer: string;
   runtime: number;
   tagline: string;
 };
