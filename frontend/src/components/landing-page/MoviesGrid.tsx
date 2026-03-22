@@ -2,8 +2,8 @@ import { getMovies } from "@/api/movies";
 import type { Movie } from "@/types/movies";
 import MovieItem from "./MovieItem";
 
+import GridSkeleton from "@/components/global/GridSkeleton";
 import { useQuery } from "@tanstack/react-query";
-import GridSkeleton from "../global/GridSkeleton";
 
 const MoviesGrid = ({ period = "day" }: { period?: string }) => {
   const {

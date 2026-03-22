@@ -5,6 +5,7 @@ import Loader from "./components/global/Loader";
 import Layout from "./Layout";
 import Landing from "./pages/Landing";
 import MoviePage from "./pages/MoviePage";
+import SearchMoviesPage from "./pages/SearchMoviesPage";
 import SignUp from "./pages/SignUp";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,10 @@ const router = createBrowserRouter([
           </Suspense>
         ),
       },
+      {
+        path: "search",
+        element: <SearchMoviesPage />,
+      },
     ],
   },
 ]);
@@ -37,7 +42,7 @@ const router = createBrowserRouter([
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />;
+      <RouterProvider router={router} />
     </QueryClientProvider>
   );
 }
