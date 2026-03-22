@@ -6,8 +6,9 @@ import (
 )
 
 const (
-	baseURL    = "https://api.themoviedb.org/3"
-	imgBaseURL = "https://image.tmdb.org/t/p/original"
+	baseURL     = "https://api.themoviedb.org/3"
+	imgBaseURL  = "https://image.tmdb.org/t/p/original"
+	imgSmallURL = "https://image.tmdb.org/t/p/w300"
 )
 
 type TmdbClient struct {

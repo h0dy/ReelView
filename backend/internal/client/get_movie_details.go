@@ -28,7 +28,7 @@ func (client *TmdbClient) GetMovieDetails(ctx context.Context, movieId int) (Mov
 		return MovieDetails{}, err
 	}
 
-	movieDetails.PosterPath = imgBaseURL + movieDetails.PosterPath
+	movieDetails.PosterPath = imgSmallURL + movieDetails.PosterPath
 	movieDetails.BackdropPath = imgBaseURL + movieDetails.BackdropPath
 	if movieDetails.Title == "" {
 		return MovieDetails{}, fmt.Errorf("couldn't find a movie with the id of %s", movieId)

@@ -1,4 +1,4 @@
-import { getMovie } from "@/api/movies";
+import { getMovieById } from "@/api/movies";
 import DetailsCard from "@/components/movie-page/DetailsCard";
 import MovieHero from "@/components/movie-page/Hero";
 import MainSection from "@/components/movie-page/MainSection";
@@ -10,7 +10,7 @@ const MoviePage = () => {
   const { id } = useParams<{ id: string }>();
   const { data } = useSuspenseQuery({
     queryKey: ["movie", id],
-    queryFn: async () => getMovie(id as string),
+    queryFn: async () => getMovieById(id as string),
   });
 
   const { movie, reviews } = data;

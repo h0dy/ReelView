@@ -25,7 +25,7 @@ const router = createBrowserRouter([
       {
         path: "movies/:id",
         element: (
-          <Suspense fallback={<Loader />}>
+          <Suspense fallback={<Loader page={true} />}>
             <MoviePage />
           </Suspense>
         ),

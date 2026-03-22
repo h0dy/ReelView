@@ -30,7 +30,7 @@ func (client *TmdbClient) GetMovieTrailer(ctx context.Context, movieId int) (Mov
 	}
 
 	for _, t := range slices.Backward(movieTrailers.Results) {
-		if t.Official == true && t.Site == "YouTube" {
+		if t.Official == true && t.Site == "YouTube" && t.Type == "Trailer" {
 			return t, nil
 		}
 	}

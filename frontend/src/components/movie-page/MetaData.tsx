@@ -18,6 +18,7 @@ const MetaData = ({ movie }: { movie: MovieDetail }) => {
       <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
         <Calendar className="w-3.5 h-3.5" />
         <span>
+          {movieReleaseDate > new Date() && "Coming in "}
           {movieReleaseDate.toLocaleDateString("en-US", {
             month: "long",
             day: "numeric",
