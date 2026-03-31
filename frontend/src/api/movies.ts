@@ -11,3 +11,8 @@ export const getMovies = async (period: string): Promise<Movie[]> => {
   const res = await api.get(`/api/movies?period=${period}`);
   return res.data.results;
 };
+
+export const getMoviesByQuery = async (query: string): Promise<Movie[]> => {
+  const res = await api.get(`/api/movies?name=${query}`);
+  return res.data.results ?? [];
+};

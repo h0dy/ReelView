@@ -5,7 +5,7 @@ import Loader from "./components/global/Loader";
 import Layout from "./Layout";
 import Landing from "./pages/Landing";
 import MoviePage from "./pages/MoviePage";
-import SearchMoviesPage from "./pages/SearchMoviesPage";
+import SearchMoviesPage from "./pages/MovieSearchPage";
 import SignUp from "./pages/SignUp";
 
 const queryClient = new QueryClient();

@@ -3,7 +3,7 @@ import { Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Input } from "../ui/input";
 
-const SearchToggle = () => {
+const SearchBar = () => {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -15,7 +15,7 @@ const SearchToggle = () => {
   }, [open]);
 
   useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
+    const handleClickOutside = (e: MouseEvent) => {
       if (
         wrapperRef.current &&
         !wrapperRef.current.contains(e.target as Node)
@@ -23,12 +23,12 @@ const SearchToggle = () => {
         setOpen(false);
         setValue("");
       }
-    }
+    };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  function handleSearch() {
+  const handleSearch = () => {
     if (!open) {
       setOpen(true);
       return;
@@ -38,18 +38,18 @@ const SearchToggle = () => {
       setValue("");
       setOpen(false);
     }
-  }
+  };
 
-  function handleKey(e: React.KeyboardEvent) {
+  const handleKey = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") handleSearch();
     if (e.key === "Escape") {
       setOpen(false);
       setValue("");
     }
-  }
+  };
 
   return (
-    <div ref={wrapperRef} className="flex items-center gap-2 relative">
+    <div ref={wrapperRef} className="flex items-center gap-2">
       <div
         className={`overflow-hidden transition-all duration-300 ${
           open ? "w-40" : "w-0"
@@ -61,7 +61,7 @@ const SearchToggle = () => {
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKey}
           placeholder="Search"
-          className="h-8 rounded-full px-4 bg-gray-200 text-gray-800 placeholder:text-gray-400 dark:bg-gray-200 dark:text-gray-800"
+          className="h-8 rounded-full px-4 bg-secondary text-secondary-foreground placeholder:text-muted-foreground"
         />
       </div>
 
@@ -69,10 +69,10 @@ const SearchToggle = () => {
         onClick={handleSearch}
         className="cursor-pointer text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white"
       >
-        <Search className="w-5 h-5" />
+        <Search className="size-5" />
       </button>
     </div>
   );
 };
 
-export default SearchToggle;
+export default SearchBar;

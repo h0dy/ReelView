@@ -2,7 +2,7 @@ import DarkMode from "./DarkMode";
 import HamNav from "./HamNav";
 import Logo from "./Logo";
 import NavList from "./NavList";
-import SearchToggle from "./SearchToggle";
+import SearchBar from "./SearchBar";
 
 const Navbar = () => {
   return (
@@ -12,7 +12,7 @@ const Navbar = () => {
           <Logo />
           <NavList />
           <div className="flex items-center gap-2 max-sm:ml-auto ml-2">
-            <SearchToggle />
+            <SearchBar />
             <DarkMode />
           </div>
           <HamNav />

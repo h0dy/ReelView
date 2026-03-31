@@ -24,7 +24,6 @@ const MoviePage = () => {
 
         <aside className="space-y-4">
           <UserActions />
-          {/* <BoxOffice revenue={movie.revenue} /> */}
           <DetailsCard movie={movie} />
         </aside>
       </div>

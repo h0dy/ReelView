@@ -1,11 +1,11 @@
 import type { MovieDetail } from "@/types/movies";
-import { Clock, Play, Share2, Star } from "lucide-react";
+import { Clock, Play, Share2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
+import StarsRating from "./StarsRating";
 
 const MovieHero = ({ movie }: { movie: MovieDetail }) => {
   const movieReleaseDate = new Date(movie.release_date);
-  const formattedRating = movie.vote_average.toFixed(1);
 
   return (
     <div className="relative h-130 w-full overflow-hidden">
@@ -44,13 +44,7 @@ const MovieHero = ({ movie }: { movie: MovieDetail }) => {
 
           {/* meta row */}
           <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1.5">
-              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-              <span className="text-foreground font-semibold">
-                {formattedRating}
-              </span>
-              <span>/10</span>
-            </div>
+            <StarsRating rating={movie.vote_average} />
             {movie.runtime > 0 && (
               <>
                 <Separator orientation="vertical" className="h-4" />
