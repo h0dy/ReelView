@@ -17,14 +17,18 @@ const MovieItem = ({ movie }: { movie: Movie }) => {
 
       <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-      <div className="absolute top-3/4 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center gap-2 w-full px-4">
-        <h3 className="text-gray-200 text-2xl font-semibold text-center">
+      <div
+        className={`absolute top-3/5 ${
+          movie.genre.length > 4 ? "sm:top-3/5" : "sm:top-3/4"
+        } left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center gap-2 w-full px-4`}
+      >
+        <h3 className="text-gray-200 text-xl sm:text-2xl font-semibold text-center">
           {movie.title}
         </h3>
 
         <div className="flex flex-wrap justify-center gap-1">
           {movie.genre.map((g) => (
-            <Badge variant="secondary" key={g}>
+            <Badge variant="secondary" key={g} className="">
               {g}
             </Badge>
           ))}

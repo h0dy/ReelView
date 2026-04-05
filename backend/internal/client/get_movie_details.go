@@ -27,7 +27,7 @@ func (client *TmdbClient) GetMovieDetails(ctx context.Context, movieId int) (Mov
 	if err := json.NewDecoder(res.Body).Decode(&movieDetails); err != nil {
 		return MovieDetails{}, err
 	}
-
+	
 	movieDetails.PosterPath = imgSmallURL + movieDetails.PosterPath
 	movieDetails.BackdropPath = imgBaseURL + movieDetails.BackdropPath
 	if movieDetails.Title == "" {

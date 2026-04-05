@@ -14,8 +14,7 @@ const MovieCard = ({ movie }: { movie: Movie }) => {
       {/* backdrop, desktop only */}
       <img
         src={movie.backdrop_path}
-        alt=""
-        aria-hidden="true"
+        alt={movie.title}
         className="hidden sm:block absolute inset-0 w-full h-full object-cover object-[center_30%] transition-all duration-700 dark:brightness-[0.30] saturate-[0.8] dark:group-hover:brightness-[0.50] group-hover:saturate-[1.20] group-hover:scale-[1.03]"
       />
       <div className="hidden sm:block absolute inset-0 bg-linear-to-r from-background via-background/70 to-background/10" />
@@ -55,11 +54,11 @@ const MovieCard = ({ movie }: { movie: Movie }) => {
           ))}
         </div>
 
-        <p className="text-muted-foreground text-sm leading-relaxed line-clamp-2 sm:line-clamp-1">
+        <p className="text-muted-foreground text-sm leading-relaxed line-clamp-1">
           {movie.overview}
         </p>
         <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/50">
-          {movie.vote_count.toLocaleString()} ratings
+          {movie.vote_count.toLocaleString()} ratings (TMDB)
         </span>
       </div>
     </Link>

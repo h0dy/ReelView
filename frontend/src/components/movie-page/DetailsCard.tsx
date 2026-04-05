@@ -32,8 +32,8 @@ const DetailsCard = ({ movie }: { movie: MovieDetail }) => {
           value={`${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m`}
         />
       )}
-      <DetailRow label="Vote count" value={formattedVoteCount} />
-      <DetailRow label="Rating" value={`${formattedRating} / 10`} />
+      <DetailRow label="Vote count (TMDB)" value={formattedVoteCount} />
+      <DetailRow label="Rating (TMDB)" value={`${formattedRating} / 10`} />
 
       <DetailRow label="Box office" value={formattedRevenue} last={true} />
     </div>
