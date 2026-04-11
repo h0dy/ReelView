@@ -97,6 +97,12 @@ func main() {
 			http.HandlerFunc(apiConfig.HandlerLogout),
 		),
 	)
+	mux.Handle(
+		"GET /api/me",
+		apiConfig.JWTAuth(apiConfig.JWTSecret)(
+			http.HandlerFunc(apiConfig.HandlerMe),
+		),
+	)
 
 	// movies
 	mux.HandleFunc("GET /api/movies", apiConfig.HandlerGetMovies)

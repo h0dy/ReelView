@@ -64,7 +64,7 @@ func (cfg *APIConfig) HandlerUserLogin(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 		Secure:   cfg.Platform != "dev",
 		SameSite: http.SameSiteStrictMode,
-		Path:     "/api/refresh",
+		Path:     "/",
 		MaxAge:   60 * 24 * 60 * 60, // 60 days
 	})
 
@@ -154,6 +154,30 @@ func (cfg *APIConfig) HandlerRefreshToken(w http.ResponseWriter, r *http.Request
 	respondWithJson(w, http.StatusOK, response{
 		Token: accessToken,
 	})
+}
+
+func (cfg *APIConfig) HandlerMe(w http.ResponseWriter, r *http.Request) {
+	token, err := auth.GetBearerToken(r.Header)
+	if err != nil {
+		respondWithErr(w, http.StatusUnauthorized, "Missing or invalid token", err)
+		return
+	}
+
+	userID, err := auth.ValidateJWT(token, cfg.JWTSecret)
+	if err != nil {
+		respondWithErr(w, http.StatusUnauthorized, "Invalid or expired token", err)
+		return
+	}
+
+	user, err := cfg.DB.GetUserByID(r.Context(), userID)
+	if err != nil {
+		respondWithErr(w, http.StatusNotFound, "User not found", err)
+		return
+	}
+
+	userResponse := utils.DbUserToJson(user)
+
+	respondWithJson(w, http.StatusOK, userResponse)
 }
 
 func (cfg *APIConfig) HandlerLogout(w http.ResponseWriter, r *http.Request) {
