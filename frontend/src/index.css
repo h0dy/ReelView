@@ -7,6 +7,16 @@ body {
   font-family: 'JetBrains Mono Variable', monospace;
 }
 
+@keyframes shrink {
+  from {
+    width: 100%;
+  }
+
+  to {
+    width: 0%;
+  }
+}
+
 @keyframes fadeSlideIn {
   from {
     opacity: 0;

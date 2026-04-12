@@ -1,4 +1,4 @@
-import useSearchContext from "@/context/useSearchContext";
+import useSearchContext from "@/context/useSearch";
 import { Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Input } from "../ui/input";

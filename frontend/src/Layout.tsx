@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 import Navbar from "./components/navbar/Navbar";
-import { SearchProvider } from "./context/SearchContext";
+import { SearchProvider } from "./context/SearchProvider";
 
 const Layout = () => {
   return (

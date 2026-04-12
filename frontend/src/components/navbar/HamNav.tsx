@@ -8,8 +8,8 @@ import {
 import { LucideAlignLeft } from "lucide-react";
 
 import { navLinks } from "@/utils/links";
-import { Link } from "react-router-dom";
 import { Button } from "../ui/button";
+import HamNavItem from "./HamNavItem";
 
 const HamNav = () => {
   return (
@@ -27,12 +27,9 @@ const HamNav = () => {
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-36" align="start" sideOffset={10}>
           {navLinks.map((link) => {
-            const { href, label } = link;
             return (
-              <DropdownMenuItem key={href} className="cursor-pointer">
-                <Link className="capitalize " to={href}>
-                  {label}
-                </Link>
+              <DropdownMenuItem key={link.href} className="cursor-pointer">
+                <HamNavItem link={link} />
               </DropdownMenuItem>
             );
           })}

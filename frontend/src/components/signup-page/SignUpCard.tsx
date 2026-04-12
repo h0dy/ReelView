@@ -11,12 +11,12 @@ import SignUpTab from "./SignUpTab";
 
 const SignUpCard = () => {
   return (
-    <Tabs defaultValue="signup" className="w-full max-w-sm">
+    <Tabs defaultValue="login" className="w-full max-w-sm">
       <Card>
         <CardHeader className="pb-0">
           <TabsList className="grid w-full grid-cols-2 mb-3">
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
             <TabsTrigger value="login">Log In</TabsTrigger>
+            <TabsTrigger value="signup">Sign Up</TabsTrigger>
           </TabsList>
 
           <TabsContent value="signup">
