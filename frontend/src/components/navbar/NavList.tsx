@@ -3,7 +3,7 @@ import NavItem from "./NavItem";
 
 const NavList = () => {
   return (
-    <ul className="sm:flex justify-evenly gap-x-4 hidden ml-auto">
+    <ul className="sm:flex justify-evenly gap-x-5 hidden ml-auto">
       {navLinks.map((link) => {
         return <NavItem key={link.href} link={link} />;
       })}

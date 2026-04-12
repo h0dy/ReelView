@@ -4,13 +4,11 @@ import TopWeekSection from "@/components/landing-page/TopWeekSection";
 
 const Landing = () => {
   return (
-    <>
-      <div className="px-5">
-        <Hero />
-        <TopTodaySection />
-        <TopWeekSection />
-      </div>
-    </>
+    <div className="px-5">
+      <Hero />
+      <TopTodaySection />
+      <TopWeekSection />
+    </div>
   );
 };
 

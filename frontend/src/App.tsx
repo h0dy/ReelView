@@ -5,6 +5,7 @@ import { Toaster } from "sonner";
 import Loader from "./components/global/Loader";
 import { AuthProvider } from "./context/AuthProvider";
 import Layout from "./Layout";
+import AboutPage from "./pages/AboutPage";
 import Landing from "./pages/Landing";
 import MoviePage from "./pages/MoviePage";
 import SearchMoviesPage from "./pages/MovieSearchPage";
@@ -40,6 +41,10 @@ const router = createBrowserRouter([
       {
         path: "search",
         element: <SearchMoviesPage />,
+      },
+      {
+        path: "about",
+        element: <AboutPage />,
       },
     ],
   },

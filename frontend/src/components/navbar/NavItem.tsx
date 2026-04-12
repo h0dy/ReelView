@@ -2,7 +2,7 @@ import useAuth from "@/context/useAuth";
 import type { NavElement } from "@/types/navbar";
 import { NavLink } from "react-router-dom";
 
-const navLinkClasses = "hover:underline font-semibold capitalize";
+const navLinkClasses = "hover:underline font-semibold capitalize tracking-tighter";
 
 const NavItem = ({ link }: { link: NavElement }) => {
   const { isLoggedIn, isPending } = useAuth();
