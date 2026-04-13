@@ -2,7 +2,7 @@ import { useState, type ChangeEvent, type SubmitEvent } from "react";
 
 import { useLogin } from "@/hooks/useLogin";
 import type { User } from "@/types/users";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { CardContent, CardFooter } from "../ui/card";
@@ -14,8 +14,10 @@ const LogInTab = () => {
     email: "",
     password: "",
   });
-
+  const location = useLocation();
   const navigator = useNavigate();
+  const from = location.state?.from || "/";
+
   const { mutate, isPending } = useLogin();
 
   const handleChange = (
@@ -32,7 +34,7 @@ const LogInTab = () => {
     mutate(data, {
       onSuccess: () => {
         toast.success("Logged in successfully");
-        navigator("/");
+        navigator(from);
       },
       onError: () => {
         toast.error("Invalid email or password");
