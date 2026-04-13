@@ -9,7 +9,7 @@ import AboutPage from "./pages/AboutPage";
 import Landing from "./pages/Landing";
 import MoviePage from "./pages/MoviePage";
 import SearchMoviesPage from "./pages/MovieSearchPage";
-import LogIn from "./pages/SignUp";
+import LogIn from "./pages/LogIn";
 
 const queryClient = new QueryClient();
 
