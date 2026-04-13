@@ -2,14 +2,15 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Toaster } from "sonner";
+import GuestRoute from "./components/auth/GuestRoute";
 import Loader from "./components/global/Loader";
 import { AuthProvider } from "./context/AuthProvider";
 import Layout from "./Layout";
 import AboutPage from "./pages/AboutPage";
 import Landing from "./pages/Landing";
+import LogIn from "./pages/LogIn";
 import MoviePage from "./pages/MoviePage";
 import SearchMoviesPage from "./pages/MovieSearchPage";
-import LogIn from "./pages/LogIn";
 
 const queryClient = new QueryClient();
 
@@ -28,7 +29,11 @@ const router = createBrowserRouter([
       },
       {
         path: "login",
-        element: <LogIn />,
+        element: (
+          <GuestRoute>
+            <LogIn />
+          </GuestRoute>
+        ),
       },
       {
         path: "movies/:id",

@@ -15,7 +15,7 @@ const MovieItem = ({ movie }: { movie: Movie }) => {
         className="object-cover h-auto w-full transition-transform duration-300 group-hover:scale-105"
       />
 
-      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 group-hover:backdrop-blur-xs transition-opacity duration-300" />
 
       <div
         className={`absolute top-3/5 ${

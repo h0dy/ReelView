@@ -19,6 +19,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const isLoggedIn = () => {
+    if (isPending) {
+      return false
+    }
     return !!user;
   };
 
