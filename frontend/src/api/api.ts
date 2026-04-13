@@ -42,8 +42,8 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       // prevent interceptor from retrying auth endpoints to avoid infinite loops
       if (
-        originalRequest.url?.includes("/api/refresh") ||
-        originalRequest.url?.includes("/api/me")
+        originalRequest.url?.includes("/api/auth/refresh") ||
+        originalRequest.url?.includes("/api/auth/me")
       ) {
         return Promise.reject(error);
       }
@@ -65,7 +65,7 @@ api.interceptors.response.use(
       try {
         // use plain axios to avoid triggering this interceptor again
         const res = await axios.post(
-          "/api/refresh",
+          "/api/auth/refresh",
           {},
           { withCredentials: true }
         );

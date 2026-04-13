@@ -64,7 +64,7 @@ func (cfg *APIConfig) HandlerUserLogin(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 		Secure:   cfg.Platform != "dev",
 		SameSite: http.SameSiteStrictMode,
-		Path:     "/",
+		Path:     "/api/auth",
 		MaxAge:   60 * 24 * 60 * 60, // 60 days
 	})
 
@@ -148,7 +148,7 @@ func (cfg *APIConfig) HandlerRefreshToken(w http.ResponseWriter, r *http.Request
 		HttpOnly: true,
 		Secure:   cfg.Platform != "dev",
 		SameSite: http.SameSiteStrictMode,
-		Path:     "/",
+		Path:     "/api/auth",
 		MaxAge:   60 * 24 * 60 * 60, // 60 days,
 	})
 	respondWithJson(w, http.StatusOK, response{

@@ -89,16 +89,16 @@ func main() {
 	mux.HandleFunc("GET /api/users/{userId}/watchlist", apiConfig.HandlerGetUserWatchlist)
 
 	// auth
-	mux.HandleFunc("POST /api/login", apiConfig.HandlerUserLogin)
-	mux.HandleFunc("POST /api/refresh", apiConfig.HandlerRefreshToken)
+	mux.HandleFunc("POST /api/auth/login", apiConfig.HandlerUserLogin)
+	mux.HandleFunc("POST /api/auth/refresh", apiConfig.HandlerRefreshToken)
 	mux.Handle(
-		"POST /api/logout",
+		"POST /api/auth/logout",
 		apiConfig.JWTAuth(apiConfig.JWTSecret)(
 			http.HandlerFunc(apiConfig.HandlerLogout),
 		),
 	)
 	mux.Handle(
-		"GET /api/me",
+		"GET /api/auth/me",
 		apiConfig.JWTAuth(apiConfig.JWTSecret)(
 			http.HandlerFunc(apiConfig.HandlerMe),
 		),

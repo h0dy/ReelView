@@ -5,7 +5,7 @@ export const loginUser = async (data: {
   email: string;
   password: string;
 }): Promise<UserWithToken> => {
-  const res = await api.post<UserWithToken>("/api/login", data);
+  const res = await api.post<UserWithToken>("/api/auth/login", data);
   return res.data;
 };
 

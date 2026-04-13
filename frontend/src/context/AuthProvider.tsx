@@ -6,7 +6,7 @@ import { AuthContext } from "./auth-context";
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const { isPending } = useInitAuth(setUser); // 👈 get isLoading here
+  const { isPending } = useInitAuth(setUser);
 
   const login = (token: string, user: AuthUser) => {
     setAccessToken(token);
