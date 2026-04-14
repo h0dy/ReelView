@@ -1,9 +1,15 @@
 import TopMoviesGrid from "@/components/top-page/TopMoviesGrid";
 import TopPeriod from "@/components/top-page/TopPeriod";
 import { Suspense, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 const TopMoviesPage = () => {
-  const [period, setPeriod] = useState("day");
+  const [searchParams] = useSearchParams();
+  let p = searchParams.get("period");
+  if (!p) {
+    p = "day";
+  }
+  const [period, setPeriod] = useState(p);
 
   return (
     <div className="min-h-screen bg-background">

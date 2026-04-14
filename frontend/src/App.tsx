@@ -1,6 +1,10 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Suspense } from "react";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  RouterProvider,
+  ScrollRestoration,
+} from "react-router-dom";
 import { Toaster } from "sonner";
 import GuestRoute from "./components/auth/GuestRoute";
 import Loader from "./components/global/Loader";
@@ -21,6 +25,7 @@ const router = createBrowserRouter([
     element: (
       <AuthProvider>
         <Layout />
+        <ScrollRestoration />
       </AuthProvider>
     ),
     children: [
