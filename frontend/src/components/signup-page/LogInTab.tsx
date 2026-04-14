@@ -15,8 +15,9 @@ const LogInTab = () => {
     password: "",
   });
   const location = useLocation();
-  const navigator = useNavigate();
+  const navigate = useNavigate();
   const from = location.state?.from || "/";
+  console.log(location.state);
 
   const { mutate, isPending } = useLogin();
 
@@ -34,7 +35,7 @@ const LogInTab = () => {
     mutate(data, {
       onSuccess: () => {
         toast.success("Logged in successfully");
-        navigator(from);
+        navigate(from);
       },
       onError: () => {
         toast.error("Invalid email or password");

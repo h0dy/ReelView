@@ -7,6 +7,7 @@ const AuthGate = () => {
         <Link
           className="text-primary hover:underline font-semibold"
           to={"/login"}
+          state={{ from: location.pathname }}
         >
           Sign Up or Log In
         </Link>{" "}
