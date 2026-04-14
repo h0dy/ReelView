@@ -5,7 +5,7 @@ import { Badge } from "../ui/badge";
 const MovieItem = ({ movie }: { movie: Movie }) => {
   return (
     <Link
-      to={`movies/${movie.id}`}
+      to={`/movies/${movie.id}`}
       state={{ movie }}
       className="relative group overflow-hidden block"
     >

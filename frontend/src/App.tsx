@@ -11,6 +11,7 @@ import Landing from "./pages/Landing";
 import LogIn from "./pages/LogIn";
 import MoviePage from "./pages/MoviePage";
 import SearchMoviesPage from "./pages/MovieSearchPage";
+import TopMoviesPage from "./pages/TopMoviesPage";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,14 @@ const router = createBrowserRouter([
       {
         path: "about",
         element: <AboutPage />,
+      },
+      {
+        path: "movies/top",
+        element: (
+          <Suspense fallback={<Loader page={true} />}>
+            <TopMoviesPage />
+          </Suspense>
+        ),
       },
     ],
   },
