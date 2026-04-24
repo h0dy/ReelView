@@ -108,25 +108,44 @@ func DbDiaryToJson(dbDiary database.MovieDiary) types.Diary {
 }
 
 func DbUserMetaToJson(dbMeta database.GetUserMetadataForMovieRow) types.UserMovieMeta {
-	meta := types.UserMovieMeta{}
-	if dbMeta.Rating.Valid {
-		meta.Rating = dbMeta.Rating.Float64
-	}
-
-	if dbMeta.Review.Valid {
-		meta.Review = dbMeta.Review.String
+	meta := types.UserMovieMeta{
+		MovieID:       dbMeta.MovieID,
+		IsInWatchlist: dbMeta.IsInWatchlist,
 	}
 
 	if dbMeta.WatchedAt.Valid {
-		meta.WatchedAt = dbMeta.WatchedAt.Time
+		meta.Diary = &types.UserDiary{
+			ID:        dbMeta.DiaryID.UUID,
+			WatchedAt: dbMeta.WatchedAt.Time,
+			CreatedAt: dbMeta.DiaryCreatedAt.Time,
+		}
 	}
-	meta.MovieID = dbMeta.MovieID
-	meta.DiaryID = dbMeta.DiaryID.UUID
-	meta.DiaryCreatedAt = dbMeta.DiaryCreatedAt.Time
-	meta.IsInWatchlist = dbMeta.IsInWatchlist
-	meta.ReviewID = dbMeta.ReviewID.UUID
-	meta.IsSpoiler = dbMeta.IsSpoiler.Bool
-	meta.ReviewCreatedAt = dbMeta.ReviewCreatedAt.Time
-	meta.ReviewUpdatedAt = dbMeta.ReviewUpdatedAt.Time
+
+	if dbMeta.Review.Valid || dbMeta.Rating.Valid {
+		meta.Review = &types.UserReview{
+			ID: dbMeta.ReviewID.UUID,
+		}
+
+		if dbMeta.Review.Valid {
+			meta.Review.Text = dbMeta.Review.String
+		}
+
+		if dbMeta.Rating.Valid {
+			meta.Review.Rating = dbMeta.Rating.Float64
+		}
+
+		if dbMeta.ReviewCreatedAt.Valid {
+			meta.Review.CreatedAt = dbMeta.ReviewCreatedAt.Time
+		}
+
+		if dbMeta.ReviewUpdatedAt.Valid {
+			meta.Review.UpdatedAt = dbMeta.ReviewUpdatedAt.Time
+		}
+
+		if dbMeta.IsSpoiler.Valid {
+			meta.Review.IsSpoiler = dbMeta.IsSpoiler.Bool
+		}
+	}
+
 	return meta
 }

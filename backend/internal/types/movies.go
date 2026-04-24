@@ -27,15 +27,23 @@ type Movie struct {
 }
 
 type UserMovieMeta struct {
-	MovieID         uuid.UUID   `json:"movie_id"`
-	DiaryID         uuid.UUID   `json:"diary_id"`
-	DiaryCreatedAt  time.Time   `json:"diary_created_at"`
-	WatchedAt       time.Time   `json:"watch_at"`
-	IsInWatchlist   interface{} `json:"is_in_watchlist"`
-	ReviewID        uuid.UUID   `json:"review_id"`
-	Review          string      `json:"review"`
-	Rating          float64     `json:"rating"`
-	IsSpoiler       bool        `json:"review_is_spoiler"`
-	ReviewCreatedAt time.Time   `json:"review_created_at"`
-	ReviewUpdatedAt time.Time   `json:"review_updated_at"`
+	MovieID       uuid.UUID   `json:"movieId"`
+	IsInWatchlist interface{} `json:"is_in_watchlist"`
+	Diary         *UserDiary  `json:"diary,omitempty"`
+	Review        *UserReview `json:"review,omitempty"`
+}
+
+type UserDiary struct {
+	ID        uuid.UUID `json:"id"`
+	WatchedAt time.Time `json:"watched_at"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type UserReview struct {
+	ID        uuid.UUID `json:"id"`
+	Text      string    `json:"text"`
+	Rating    float64   `json:"rating"`
+	IsSpoiler bool      `json:"is_spoiler"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
