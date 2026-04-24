@@ -1,8 +1,10 @@
 -- name: GetMovieByTmdbId :one
 SELECT * FROM movies WHERE tmdb_id = $1;
 
+
 -- name: GetMovieById :one
 SELECT * FROM movies WHERE id = $1;
+
 
 -- name: AddMovie :one
 INSERT INTO movies (
@@ -60,3 +62,43 @@ RETURNING *;
 
 -- name: DeleteAllMovies :exec
 DELETE FROM movies;
+
+
+-- name: GetUserMetadataForMovie :one
+SELECT 
+    m.id AS movie_id,
+
+    md.id AS diary_id,
+    md.user_id AS diary_user_id,
+    md.watched_at,
+    md.created_at AS diary_created_at,
+    md.updated_at AS diary_updated_at,
+
+    (wl.movie_id IS NOT NULL) AS is_in_watchlist,
+
+    r.id AS review_id,
+    r.review,
+    r.rating,
+    r.is_spoiler,
+    r.created_at AS review_created_at,
+    r.updated_at AS review_updated_at
+
+FROM movies m
+LEFT JOIN movie_diaries md
+    ON md.id = (
+        SELECT id
+        FROM movie_diaries
+        WHERE movie_id = m.id AND md.user_id = $1
+    )
+
+LEFT JOIN watchlists wl
+    ON m.id = wl.movie_id AND wl.user_id = $1
+
+LEFT JOIN movie_reviews r
+    ON r.id = (
+        SELECT id
+        FROM movie_reviews
+        WHERE movie_id = m.id AND r.user_id = $1
+    )
+
+WHERE m.id = $2;

@@ -106,3 +106,27 @@ func DbDiaryToJson(dbDiary database.MovieDiary) types.Diary {
 		CreatedAt: dbDiary.CreatedAt,
 	}
 }
+
+func DbUserMetaToJson(dbMeta database.GetUserMetadataForMovieRow) types.UserMovieMeta {
+	meta := types.UserMovieMeta{}
+	if dbMeta.Rating.Valid {
+		meta.Rating = dbMeta.Rating.Float64
+	}
+
+	if dbMeta.Review.Valid {
+		meta.Review = dbMeta.Review.String
+	}
+
+	if dbMeta.WatchedAt.Valid {
+		meta.WatchedAt = dbMeta.WatchedAt.Time
+	}
+	meta.MovieID = dbMeta.MovieID
+	meta.DiaryID = dbMeta.DiaryID.UUID
+	meta.DiaryCreatedAt = dbMeta.DiaryCreatedAt.Time
+	meta.IsInWatchlist = dbMeta.IsInWatchlist
+	meta.ReviewID = dbMeta.ReviewID.UUID
+	meta.IsSpoiler = dbMeta.IsSpoiler.Bool
+	meta.ReviewCreatedAt = dbMeta.ReviewCreatedAt.Time
+	meta.ReviewUpdatedAt = dbMeta.ReviewUpdatedAt.Time
+	return meta
+}

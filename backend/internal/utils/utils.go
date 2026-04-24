@@ -77,3 +77,5 @@ func (u *UtilsConfig) AddMovieToDB(ctx context.Context, tmdb_id int) (database.M
 	}
 	return movieRecord, nil
 }
+
+

@@ -106,7 +106,13 @@ func main() {
 
 	// movies
 	mux.HandleFunc("GET /api/movies", apiConfig.HandlerGetMovies)
-	mux.HandleFunc("GET /api/movies/{tmdbId}", apiConfig.HandlerGetMovieDetails)
+	// mux.HandleFunc("GET /api/movies/{tmdbId}", apiConfig.HandlerGetMovieDetails)
+	mux.Handle(
+		"GET /api/movies/{tmdbId}",
+		apiConfig.OptionalJWTAuth(apiConfig.JWTSecret)(
+			http.HandlerFunc(apiConfig.HandlerGetMovieDetails),
+		),
+	)
 
 	// reviews
 	mux.HandleFunc("GET /api/reviews/{reviewId}", apiConfig.HandlerGetSingleReview)

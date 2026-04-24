@@ -30,8 +30,9 @@ func (cfg *APIConfig) HandlerGetMovieDetails(w http.ResponseWriter, r *http.Requ
 	tmdbId, _ := strconv.Atoi(r.PathValue("tmdbId"))
 
 	type response struct {
-		Movie   types.Movie         `json:"movie"`
-		Reviews []types.MovieReview `json:"reviews"`
+		Movie        types.Movie          `json:"movie"`
+		Reviews      []types.MovieReview  `json:"reviews"`
+		UserMetadata *types.UserMovieMeta `json:"user_metadata"`
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -68,8 +69,11 @@ func (cfg *APIConfig) HandlerGetMovieDetails(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	meta := cfg.GetUserMovieMeta(r.Context(), r, movie.ID)
+
 	respondWithJson(w, http.StatusOK, response{
-		Movie:   movie,
-		Reviews: reviews,
+		Movie:        movie,
+		Reviews:      reviews,
+		UserMetadata: meta,
 	})
 }

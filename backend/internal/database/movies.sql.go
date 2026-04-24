@@ -7,6 +7,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"time"
 
@@ -195,6 +196,91 @@ func (q *Queries) GetMovieByTmdbId(ctx context.Context, tmdbID int32) (Movie, er
 		&i.Trailer,
 		&i.Tagline,
 		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getUserMetadataForMovie = `-- name: GetUserMetadataForMovie :one
+SELECT 
+    m.id AS movie_id,
+
+    -- diary
+    md.id AS diary_id,
+    md.user_id AS diary_user_id,
+    md.watched_at,
+    md.created_at AS diary_created_at,
+    md.updated_at AS diary_updated_at,
+
+    -- watchlist
+    (wl.movie_id IS NOT NULL) AS is_in_watchlist,
+
+    -- review
+    r.id AS review_id,
+    r.review,
+    r.rating,
+    r.is_spoiler,
+    r.created_at AS review_created_at,
+    r.updated_at AS review_updated_at
+
+FROM movies m
+LEFT JOIN movie_diaries md
+    ON md.id = (
+        SELECT id
+        FROM movie_diaries
+        WHERE movie_id = m.id AND md.user_id = $1
+    )
+
+LEFT JOIN watchlists wl
+    ON m.id = wl.movie_id AND wl.user_id = $1
+
+LEFT JOIN movie_reviews r
+    ON r.id = (
+        SELECT id
+        FROM movie_reviews
+        WHERE movie_id = m.id AND r.user_id = $1
+    )
+
+WHERE m.id = $2
+`
+
+type GetUserMetadataForMovieParams struct {
+	UserID uuid.UUID
+	ID     uuid.UUID
+}
+
+type GetUserMetadataForMovieRow struct {
+	MovieID         uuid.UUID
+	DiaryID         uuid.NullUUID
+	DiaryUserID     uuid.NullUUID
+	WatchedAt       sql.NullTime
+	DiaryCreatedAt  sql.NullTime
+	DiaryUpdatedAt  sql.NullTime
+	IsInWatchlist   interface{}
+	ReviewID        uuid.NullUUID
+	Review          sql.NullString
+	Rating          sql.NullFloat64
+	IsSpoiler       sql.NullBool
+	ReviewCreatedAt sql.NullTime
+	ReviewUpdatedAt sql.NullTime
+}
+
+func (q *Queries) GetUserMetadataForMovie(ctx context.Context, arg GetUserMetadataForMovieParams) (GetUserMetadataForMovieRow, error) {
+	row := q.db.QueryRowContext(ctx, getUserMetadataForMovie, arg.UserID, arg.ID)
+	var i GetUserMetadataForMovieRow
+	err := row.Scan(
+		&i.MovieID,
+		&i.DiaryID,
+		&i.DiaryUserID,
+		&i.WatchedAt,
+		&i.DiaryCreatedAt,
+		&i.DiaryUpdatedAt,
+		&i.IsInWatchlist,
+		&i.ReviewID,
+		&i.Review,
+		&i.Rating,
+		&i.IsSpoiler,
+		&i.ReviewCreatedAt,
+		&i.ReviewUpdatedAt,
 	)
 	return i, err
 }
