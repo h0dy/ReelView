@@ -1,8 +1,14 @@
 import useAuth from "@/context/useAuth";
 import type { NavElement } from "@/types/navbar";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
-const HamNavItem = ({ link }: { link: NavElement }) => {
+const HamNavItem = ({
+  link,
+  onAction,
+}: {
+  link: NavElement;
+  onAction: (a: string | undefined) => void;
+}) => {
   const { isLoggedIn, isPending } = useAuth();
 
   const visible =
@@ -19,9 +25,16 @@ const HamNavItem = ({ link }: { link: NavElement }) => {
   }
 
   return (
-    <Link className="capitalize " to={link.href}>
+    <NavLink
+      className={({ isActive }) =>
+        isActive && link.href ? "capitalize underline" : "capitalize"
+      }
+      to={link.href ?? "/"}
+      onClick={() => onAction(link.action)}
+      state={{ from: location.pathname }}
+    >
       {link.label}
-    </Link>
+    </NavLink>
   );
 };
 

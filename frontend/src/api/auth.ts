@@ -10,7 +10,7 @@ export const loginUser = async (data: {
 };
 
 export const logoutUser = async () => {
-  await api.post("/logout");
+  await api.post("/api/auth/logout");
   setAccessToken(null);
 };
 

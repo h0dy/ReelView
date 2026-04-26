@@ -11,7 +11,7 @@ import { navLinks } from "@/utils/links";
 import { Button } from "../ui/button";
 import HamNavItem from "./HamNavItem";
 
-const HamNav = () => {
+const HamNav = ({ onAction }: { onAction: () => void }) => {
   return (
     <div className="sm:hidden">
       <DropdownMenu>
@@ -28,8 +28,8 @@ const HamNav = () => {
         <DropdownMenuContent className="w-36" align="start" sideOffset={10}>
           {navLinks.map((link) => {
             return (
-              <DropdownMenuItem key={link.href} className="cursor-pointer">
-                <HamNavItem link={link} />
+              <DropdownMenuItem key={link.label} className="cursor-pointer">
+                <HamNavItem onAction={onAction} link={link} />
               </DropdownMenuItem>
             );
           })}

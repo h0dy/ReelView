@@ -2,9 +2,16 @@ import useAuth from "@/context/useAuth";
 import type { NavElement } from "@/types/navbar";
 import { NavLink } from "react-router-dom";
 
-const navLinkClasses = "hover:underline font-semibold capitalize tracking-tighter";
+const navLinkClasses =
+  "hover:underline font-semibold capitalize tracking-tighter";
 
-const NavItem = ({ link }: { link: NavElement }) => {
+const NavItem = ({
+  link,
+  onAction,
+}: {
+  link: NavElement;
+  onAction: (a: string | undefined) => void;
+}) => {
   const { isLoggedIn, isPending } = useAuth();
 
   const visible =
@@ -24,9 +31,11 @@ const NavItem = ({ link }: { link: NavElement }) => {
     <li>
       <NavLink
         className={({ isActive }) =>
-          isActive ? `${navLinkClasses} underline` : navLinkClasses
+          isActive && link.href ? `${navLinkClasses} underline` : navLinkClasses
         }
-        to={link.href}
+        to={link.href ?? "/"}
+        onClick={() => onAction(link.action)}
+        state={{ from: location.pathname }}
       >
         {link.label}
       </NavLink>

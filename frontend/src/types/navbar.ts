@@ -1,5 +1,6 @@
 export type NavElement = {
-  href: string;
+  href?: string;
   label: string;
   access: "public" | "auth" | "guest";
+  action?: string;
 };
