@@ -19,7 +19,9 @@ const MovieItem = ({ movie }: { movie: Movie }) => {
 
       <div
         className={`absolute top-3/5 ${
-          movie.genre.length > 4 ? "sm:top-3/5" : "sm:top-3/4"
+          movie.genre.length > 4 || movie.original_title.length > 30
+            ? "sm:top-3/5"
+            : "sm:top-3/4"
         } left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center gap-2 w-full px-4`}
       >
         <h3 className="text-gray-200 text-xl sm:text-2xl font-semibold text-center">

@@ -1,7 +1,7 @@
 import type { Movie, MovieDetails } from "@/types/movies";
 import api from "./api";
 
-export const getMovieById = async (id: string): Promise<MovieDetails> => {
+export const getMovieById = async (id: number): Promise<MovieDetails> => {
   const res = await api.get(`/api/movies/${id}`);
   const movieDetails: MovieDetails = res.data;
   return movieDetails;

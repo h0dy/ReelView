@@ -3,6 +3,7 @@ import type { Review } from "./reviews";
 export type MovieDetails = {
   movie: MovieDetail;
   reviews: Review[];
+  user_metadata: UserMovieMeta;
 };
 
 export type MovieDetail = {
@@ -41,4 +42,24 @@ export type Movie = {
   title: string;
   vote_average: number;
   vote_count: number;
+};
+
+export type UserMovieMeta = {
+  movie_id: string;
+  is_in_watchlist: boolean;
+  tmdb_id: number;
+  diary?: {
+    id: string;
+    watched_at: string;
+    created_at: string;
+  };
+
+  review?: {
+    id: string;
+    text: string;
+    rating: number;
+    is_spoiler: boolean;
+    created_at: string;
+    updated_at: string; // fixed typo from updated_t
+  };
 };

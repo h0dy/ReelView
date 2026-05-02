@@ -10,10 +10,10 @@ const MoviesGrid = ({ period = "day" }: { period?: string }) => {
     data: movies = [],
     isLoading,
     isError,
-    error,
   } = useQuery<Movie[], Error>({
     queryKey: ["movies", period],
     queryFn: () => getMovies(period),
+    staleTime: 60 * 1000 * 30, // data fresh for 30 min
   });
 
   if (isLoading) {
@@ -21,7 +21,6 @@ const MoviesGrid = ({ period = "day" }: { period?: string }) => {
   }
 
   if (isError) {
-    console.log(error.message);
     return <p className="text-center">Something went wrong :(</p>;
   }
 

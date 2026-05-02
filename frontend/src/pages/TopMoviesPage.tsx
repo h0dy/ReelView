@@ -13,7 +13,7 @@ const TopMoviesPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto py-12">
+      <div className="max-w-7xl mx-auto py-12 px-5">
         <div className="mb-10">
           <p className="font-semibold uppercase tracking-widest text-muted-foreground mb-2">
             top movies
@@ -27,7 +27,7 @@ const TopMoviesPage = () => {
           </div>
           <div className="mt-3 h-px bg-border" />
         </div>
-        <div className="px-5">
+        <div className="">
           <Suspense>
             <TopMoviesGrid period={period} />
           </Suspense>

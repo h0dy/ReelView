@@ -12,7 +12,6 @@ const Navbar = () => {
 
   const handleAction = (action?: string) => {
     if (action === "logout") {
-      console.log("logged out");
       logout();
       navigator("/");
     }

@@ -17,7 +17,6 @@ const LogInTab = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const from = location.state?.from || "/";
-  console.log(location.state);
 
   const { mutate, isPending } = useLogin();
 

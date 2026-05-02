@@ -17,7 +17,13 @@ import MoviePage from "./pages/MoviePage";
 import SearchMoviesPage from "./pages/MovieSearchPage";
 import TopMoviesPage from "./pages/TopMoviesPage";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // data fresh for 5 min
+    },
+  },
+});
 
 const router = createBrowserRouter([
   {
@@ -43,11 +49,7 @@ const router = createBrowserRouter([
       },
       {
         path: "movies/:id",
-        element: (
-          <Suspense fallback={<Loader page={true} />}>
-            <MoviePage />
-          </Suspense>
-        ),
+        element: <MoviePage />,
       },
       {
         path: "search",

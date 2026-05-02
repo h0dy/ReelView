@@ -1,12 +1,12 @@
 import type { Review } from "@/types/reviews";
-import type { AuthUser } from "@/types/users";
+import { getUserAvatarInitials } from "@/utils/helpers";
 import { AlertTriangle, Star } from "lucide-react";
 import { useState } from "react";
 
 const ReviewCard = ({ review }: { review: Review }) => {
   const [expanded, setExpanded] = useState(false);
-  const isLong = review.review.length > 300;
-  const initials = getInitials(review.user);
+  const isLong = review.text.length > 300;
+  const initials = getUserAvatarInitials(review.user);
   const formattedDate = new Date(review.created_at).toLocaleDateString(
     "en-US",
     { month: "short", day: "numeric", year: "numeric" }
@@ -14,7 +14,6 @@ const ReviewCard = ({ review }: { review: Review }) => {
 
   return (
     <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-      {/* Header */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-semibold uppercase shrink-0">
@@ -38,17 +37,18 @@ const ReviewCard = ({ review }: { review: Review }) => {
             </span>
           )}
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-            <span>{review.rating}/10</span>
+            {review.rating > 0 && (
+              <>
+                <Star className="size-3 fill-amber-400 text-amber-400" />
+                <span>{review.rating}/10</span>
+              </>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Body */}
       <p className="text-sm text-muted-foreground leading-relaxed">
-        {isLong && !expanded
-          ? review.review.slice(0, 300) + "…"
-          : review.review}
+        {isLong && !expanded ? review.text.slice(0, 300) + "…" : review.text}
       </p>
 
       {isLong && (
@@ -62,15 +62,5 @@ const ReviewCard = ({ review }: { review: Review }) => {
     </div>
   );
 };
-
-function getInitials(user: AuthUser): string {
-  if (user.name) {
-    const parts = user.name.trim().split(" ");
-    return parts.length >= 2
-      ? `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
-      : parts[0][0].toUpperCase();
-  }
-  return user.username[0].toUpperCase();
-}
 
 export default ReviewCard;

@@ -6,6 +6,7 @@ const TopMoviesGrid = ({ period }: { period: string }) => {
   const { data: movies } = useSuspenseQuery({
     queryKey: ["movies", period],
     queryFn: () => getMovies(period),
+    staleTime: 1000 * 60 * 30, // data fresh for 30 min
   });
 
   return (
