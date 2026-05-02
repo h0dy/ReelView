@@ -67,6 +67,7 @@ DELETE FROM movies;
 -- name: GetUserMetadataForMovie :one
 SELECT 
     m.id AS movie_id,
+    m.tmdb_id as tmdb_id,
 
     md.id AS diary_id,
     md.user_id AS diary_user_id,

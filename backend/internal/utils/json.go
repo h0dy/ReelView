@@ -42,7 +42,7 @@ func DbReviewsTypeToJson(dbReviews []database.GetMovieReviewsRow) []types.MovieR
 		reviews = append(reviews, types.MovieReview{
 			ID:        r.ID,
 			MovieID:   r.MovieID,
-			Review:    r.Review,
+			Text:      r.Review,
 			Rating:    r.Rating,
 			IsSpoiler: r.IsSpoiler,
 			CreatedAt: r.CreatedAt,
@@ -65,7 +65,7 @@ func DbReviewTypeToJson(dbReview database.MovieReview, user types.AuthUser) type
 	return types.MovieReview{
 		ID:        dbReview.ID,
 		MovieID:   dbReview.MovieID,
-		Review:    dbReview.Review,
+		Text:      dbReview.Review,
 		Rating:    dbReview.Rating,
 		IsSpoiler: dbReview.IsSpoiler,
 		CreatedAt: dbReview.CreatedAt,
@@ -111,6 +111,7 @@ func DbUserMetaToJson(dbMeta database.GetUserMetadataForMovieRow) types.UserMovi
 	meta := types.UserMovieMeta{
 		MovieID:       dbMeta.MovieID,
 		IsInWatchlist: dbMeta.IsInWatchlist,
+		TmdbID:        dbMeta.TmdbID,
 	}
 
 	if dbMeta.WatchedAt.Valid {

@@ -129,7 +129,7 @@ func (cfg *APIConfig) HandlerUpdateDiary(w http.ResponseWriter, r *http.Request)
 
 	updatedDiary, err := cfg.DB.UpdateMovieDiary(r.Context(), database.UpdateMovieDiaryParams{
 		WatchedAt: watchedAt,
-		ID:        authUser.ID,
+		ID:        diary.ID,
 	})
 	if err != nil {
 		respondWithErr(w, http.StatusInternalServerError, "Couldn't update diary, something went wrong", err)

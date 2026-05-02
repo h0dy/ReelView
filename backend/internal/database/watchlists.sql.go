@@ -66,12 +66,17 @@ func (q *Queries) GetUserWatchlist(ctx context.Context, userID uuid.UUID) ([]Wat
 	return items, nil
 }
 
-const getWatchlistsRecord = `-- name: GetWatchlistsRecord :one
-SELECT id, movie_id, user_id, created_at FROM watchlists WHERE id = $1
+const getWatchlistRecord = `-- name: GetWatchlistRecord :one
+SELECT id, movie_id, user_id, created_at FROM watchlists WHERE movie_id = $1 AND user_id = $2
 `
 
-func (q *Queries) GetWatchlistsRecord(ctx context.Context, id uuid.UUID) (Watchlist, error) {
-	row := q.db.QueryRowContext(ctx, getWatchlistsRecord, id)
+type GetWatchlistRecordParams struct {
+	MovieID uuid.UUID
+	UserID  uuid.UUID
+}
+
+func (q *Queries) GetWatchlistRecord(ctx context.Context, arg GetWatchlistRecordParams) (Watchlist, error) {
+	row := q.db.QueryRowContext(ctx, getWatchlistRecord, arg.MovieID, arg.UserID)
 	var i Watchlist
 	err := row.Scan(
 		&i.ID,
@@ -83,10 +88,15 @@ func (q *Queries) GetWatchlistsRecord(ctx context.Context, id uuid.UUID) (Watchl
 }
 
 const removeMovieFromWatchlist = `-- name: RemoveMovieFromWatchlist :exec
-DELETE FROM watchlists WHERE id = $1
+DELETE FROM watchlists WHERE movie_id = $1 AND user_id = $2
 `
 
-func (q *Queries) RemoveMovieFromWatchlist(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.ExecContext(ctx, removeMovieFromWatchlist, id)
+type RemoveMovieFromWatchlistParams struct {
+	MovieID uuid.UUID
+	UserID  uuid.UUID
+}
+
+func (q *Queries) RemoveMovieFromWatchlist(ctx context.Context, arg RemoveMovieFromWatchlistParams) error {
+	_, err := q.db.ExecContext(ctx, removeMovieFromWatchlist, arg.MovieID, arg.UserID)
 	return err
 }

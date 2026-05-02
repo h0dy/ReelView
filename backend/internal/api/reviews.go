@@ -13,7 +13,7 @@ import (
 
 func (cfg APIConfig) HandlerCreateReview(w http.ResponseWriter, r *http.Request) {
 	type reqBody struct {
-		Body      string  `json:"Body"`
+		Text      string  `json:"text"`
 		Rating    float32 `json:"rating"`
 		IsSpoiler bool    `json:"is_spoiler"`
 	}
@@ -27,7 +27,7 @@ func (cfg APIConfig) HandlerCreateReview(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if review.Body == "" && review.Rating == 0 {
+	if review.Text == "" && review.Rating == 0 {
 		respondWithErr(w, http.StatusBadRequest, "please provide a rating (1 - 10) or review field", nil)
 		return
 	}
@@ -51,7 +51,7 @@ func (cfg APIConfig) HandlerCreateReview(w http.ResponseWriter, r *http.Request)
 		database.CreateMovieReviewParams{
 			MovieID:   movieId,
 			UserID:    authUser.ID,
-			Review:    review.Body,
+			Review:    review.Text,
 			Rating:    review.Rating,
 			IsSpoiler: review.IsSpoiler,
 		})
@@ -69,25 +69,29 @@ func (cfg APIConfig) HandlerCreateReview(w http.ResponseWriter, r *http.Request)
 }
 
 func (cfg APIConfig) HandlerDeleteReview(w http.ResponseWriter, r *http.Request) {
+	movieId, err := uuid.Parse(r.PathValue("movieId"))
 	reviewId, err := uuid.Parse(r.PathValue("reviewId"))
 	if err != nil {
 		respondWithErr(w, http.StatusBadRequest, "invalid review id", err)
 		return
 	}
 
-	user := r.Context().Value(UserContextKey).(*types.AuthUser)
+	authUser := r.Context().Value(UserContextKey).(*types.AuthUser)
 
 	review, err := cfg.DB.GetSingleMovieReview(r.Context(), reviewId)
 	if err != nil {
 		respondWithErr(w, http.StatusNotFound, "couldn't find review", err)
 		return
 	}
-	if review.UserID != user.ID {
+	if review.UserID != authUser.ID {
 		respondWithErr(w, http.StatusUnauthorized, "unauthorized", nil)
 		return
 	}
 
-	if err := cfg.DB.DeleteReview(r.Context(), reviewId); err != nil {
+	if err := cfg.DB.DeleteReview(r.Context(), database.DeleteReviewParams{
+		MovieID: movieId,
+		UserID:  authUser.ID,
+	}); err != nil {
 		respondWithErr(w, http.StatusInternalServerError, "something went wrong", err)
 		return
 	}
@@ -96,11 +100,13 @@ func (cfg APIConfig) HandlerDeleteReview(w http.ResponseWriter, r *http.Request)
 
 func (cfg APIConfig) HandlerUpdateReview(w http.ResponseWriter, r *http.Request) {
 	type reqBody struct {
-		Body      string  `json:"Body"`
+		Text      string  `json:"text"`
 		Rating    float32 `json:"rating"`
 		IsSpoiler bool    `json:"is_spoiler"`
 	}
 
+	authUser := r.Context().Value(UserContextKey).(*types.AuthUser)
+	movieId, err := uuid.Parse(r.PathValue("movieId"))
 	reviewId, err := uuid.Parse(r.PathValue("reviewId"))
 	if err != nil {
 		respondWithErr(w, http.StatusBadRequest, "invalid review id", err)
@@ -122,17 +128,17 @@ func (cfg APIConfig) HandlerUpdateReview(w http.ResponseWriter, r *http.Request)
 			err)
 		return
 	}
-	authUser := r.Context().Value(UserContextKey).(*types.AuthUser)
 	if currentReview.UserID != authUser.ID {
 		respondWithErr(w, http.StatusUnauthorized, "Unauthorized", nil)
 		return
 	}
 
 	updatedReview, err := cfg.DB.UpdateMovieReview(r.Context(), database.UpdateMovieReviewParams{
-		Review:    review.Body,
+		Review:    review.Text,
 		IsSpoiler: review.IsSpoiler,
 		Rating:    review.Rating,
-		ID:        reviewId,
+		MovieID:   movieId,
+		UserID:    authUser.ID,
 	})
 	if err != nil {
 		respondWithErr(w,

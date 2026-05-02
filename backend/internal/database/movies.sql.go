@@ -203,18 +203,16 @@ func (q *Queries) GetMovieByTmdbId(ctx context.Context, tmdbID int32) (Movie, er
 const getUserMetadataForMovie = `-- name: GetUserMetadataForMovie :one
 SELECT 
     m.id AS movie_id,
+    m.tmdb_id as tmdb_id,
 
-    -- diary
     md.id AS diary_id,
     md.user_id AS diary_user_id,
     md.watched_at,
     md.created_at AS diary_created_at,
     md.updated_at AS diary_updated_at,
 
-    -- watchlist
     (wl.movie_id IS NOT NULL) AS is_in_watchlist,
 
-    -- review
     r.id AS review_id,
     r.review,
     r.rating,
@@ -250,6 +248,7 @@ type GetUserMetadataForMovieParams struct {
 
 type GetUserMetadataForMovieRow struct {
 	MovieID         uuid.UUID
+	TmdbID          int32
 	DiaryID         uuid.NullUUID
 	DiaryUserID     uuid.NullUUID
 	WatchedAt       sql.NullTime
@@ -269,6 +268,7 @@ func (q *Queries) GetUserMetadataForMovie(ctx context.Context, arg GetUserMetada
 	var i GetUserMetadataForMovieRow
 	err := row.Scan(
 		&i.MovieID,
+		&i.TmdbID,
 		&i.DiaryID,
 		&i.DiaryUserID,
 		&i.WatchedAt,

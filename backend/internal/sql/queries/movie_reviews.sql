@@ -23,7 +23,7 @@ WHERE r.movie_id = $1;
 
 
 -- name: DeleteReview :exec
-DELETE FROM movie_reviews WHERE id = $1;
+DELETE FROM movie_reviews WHERE movie_id = $1 AND user_id = $2;
 
 -- name: GetSingleMovieReview :one
 SELECT * FROM movie_reviews WHERE id = $1;
@@ -34,7 +34,7 @@ SET review = $1,
   is_spoiler = $2,
   rating = $3,
   updated_at = NOW()
-WHERE id = $4
+WHERE movie_id = $4 AND user_id = $5
 RETURNING *;
 
 -- name: GetUserReviews :many

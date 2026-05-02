@@ -38,14 +38,17 @@ func (cfg APIConfig) HandlerAddToWatchlist(w http.ResponseWriter, r *http.Reques
 }
 
 func (cfg APIConfig) HandlerRemoveFromWatchlist(w http.ResponseWriter, r *http.Request) {
-	id, err := uuid.Parse(r.PathValue("id"))
+	movieId, err := uuid.Parse(r.PathValue("movieId"))
 	if err != nil {
 		respondWithErr(w, http.StatusBadRequest, "invalid id", err)
 		return
 	}
 
 	authUser := r.Context().Value(UserContextKey).(*types.AuthUser)
-	record, err := cfg.DB.GetWatchlistsRecord(r.Context(), id)
+	record, err := cfg.DB.GetWatchlistRecord(r.Context(), database.GetWatchlistRecordParams{
+		MovieID: movieId,
+		UserID:  authUser.ID,
+	})
 	if err != nil {
 		respondWithErr(w, http.StatusNotFound, "couldn't find watchlist record", err)
 		return
@@ -56,7 +59,10 @@ func (cfg APIConfig) HandlerRemoveFromWatchlist(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	if err := cfg.DB.RemoveMovieFromWatchlist(r.Context(), id); err != nil {
+	if err := cfg.DB.RemoveMovieFromWatchlist(r.Context(), database.RemoveMovieFromWatchlistParams{
+		MovieID: movieId,
+		UserID:  authUser.ID,
+	}); err != nil {
 		respondWithErr(w, http.StatusInternalServerError, "couldn't remove movie from watchlist", err)
 		return
 	}

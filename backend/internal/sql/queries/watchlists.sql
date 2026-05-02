@@ -4,10 +4,10 @@ VALUES (gen_random_uuid(), $1, $2, NOW())
 RETURNING *;
 
 -- name: RemoveMovieFromWatchlist :exec
-DELETE FROM watchlists WHERE id = $1;
+DELETE FROM watchlists WHERE movie_id = $1 AND user_id = $2;
 
--- name: GetWatchlistsRecord :one
-SELECT * FROM watchlists WHERE id = $1;
+-- name: GetWatchlistRecord :one
+SELECT * FROM watchlists WHERE movie_id = $1 AND user_id = $2;
 
 -- name: GetUserWatchlist :many
 SELECT * FROM watchlists WHERE user_id = $1;

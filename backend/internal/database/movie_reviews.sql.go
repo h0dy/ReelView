@@ -49,11 +49,16 @@ func (q *Queries) CreateMovieReview(ctx context.Context, arg CreateMovieReviewPa
 }
 
 const deleteReview = `-- name: DeleteReview :exec
-DELETE FROM movie_reviews WHERE id = $1
+DELETE FROM movie_reviews WHERE movie_id = $1 AND user_id = $2
 `
 
-func (q *Queries) DeleteReview(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.ExecContext(ctx, deleteReview, id)
+type DeleteReviewParams struct {
+	MovieID uuid.UUID
+	UserID  uuid.UUID
+}
+
+func (q *Queries) DeleteReview(ctx context.Context, arg DeleteReviewParams) error {
+	_, err := q.db.ExecContext(ctx, deleteReview, arg.MovieID, arg.UserID)
 	return err
 }
 
@@ -189,7 +194,7 @@ SET review = $1,
   is_spoiler = $2,
   rating = $3,
   updated_at = NOW()
-WHERE id = $4
+WHERE movie_id = $4 AND user_id = $5
 RETURNING id, movie_id, user_id, review, rating, is_spoiler, created_at, updated_at
 `
 
@@ -197,7 +202,8 @@ type UpdateMovieReviewParams struct {
 	Review    string
 	IsSpoiler bool
 	Rating    float32
-	ID        uuid.UUID
+	MovieID   uuid.UUID
+	UserID    uuid.UUID
 }
 
 func (q *Queries) UpdateMovieReview(ctx context.Context, arg UpdateMovieReviewParams) (MovieReview, error) {
@@ -205,7 +211,8 @@ func (q *Queries) UpdateMovieReview(ctx context.Context, arg UpdateMovieReviewPa
 		arg.Review,
 		arg.IsSpoiler,
 		arg.Rating,
-		arg.ID,
+		arg.MovieID,
+		arg.UserID,
 	)
 	var i MovieReview
 	err := row.Scan(
