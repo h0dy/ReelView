@@ -7,13 +7,17 @@ import NavList from "./NavList";
 import SearchBar from "./SearchBar";
 
 const Navbar = () => {
-  const { logout } = useAuth();
-  const navigator = useNavigate();
+  const { logout, user } = useAuth();
+  const navigate = useNavigate();
 
   const handleAction = (action?: string) => {
     if (action === "logout") {
       logout();
-      navigator("/");
+      navigate("/");
+    } else if (action === "profile") {
+      console.log("navigating to profile");
+      navigate(`/users/${user?.username}`);
+      navigate(0); // force refresh
     }
   };
 
