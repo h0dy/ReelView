@@ -83,6 +83,7 @@ func DbUserToJson(dbUser database.User) types.AuthUser {
 		IsPremium: dbUser.IsPremium,
 		Username:  dbUser.Username,
 		Name:      dbUser.Name,
+		Bio:       dbUser.Bio,
 	}
 }
 
@@ -97,6 +98,17 @@ func DbWatchlistToJson(dbWatchlist database.Watchlist, movie types.Movie) types.
 }
 
 func DbDiaryToJson(dbDiary database.MovieDiary) types.Diary {
+	return types.Diary{ID: dbDiary.ID, MovieID: dbDiary.MovieID, UserID: dbDiary.UserID, WatchedAt: dbDiary.WatchedAt, UpdatedAt: dbDiary.UpdatedAt, CreatedAt: dbDiary.CreatedAt}
+}
+
+func DbDiaryUserToJson(dbDiary database.GetUserDiariesRow) types.Diary {
+	var movieGenres []types.Genre
+	if dbDiary.Genres.Valid {
+		if err := json.Unmarshal(dbDiary.Genres.RawMessage, &movieGenres); err != nil {
+			return types.Diary{}
+		}
+	}
+
 	return types.Diary{
 		ID:        dbDiary.ID,
 		MovieID:   dbDiary.MovieID,
@@ -104,6 +116,26 @@ func DbDiaryToJson(dbDiary database.MovieDiary) types.Diary {
 		WatchedAt: dbDiary.WatchedAt,
 		UpdatedAt: dbDiary.UpdatedAt,
 		CreatedAt: dbDiary.CreatedAt,
+
+		Movie: types.Movie{
+			ID:            dbDiary.ID,
+			TmdbID:        int(dbDiary.TmdbID),
+			ImdbID:        dbDiary.ImdbID,
+			Title:         dbDiary.Title,
+			OriginalTitle: dbDiary.OriginalTitle,
+			PosterPath:    dbDiary.PosterPath,
+			BackdropPath:  dbDiary.BackdropPath,
+			Overview:      dbDiary.Overview,
+			ReleaseDate:   dbDiary.ReleaseDate.String(),
+			VoteAverage:   dbDiary.VoteAverage,
+			VoteCount:     int(dbDiary.VoteCount),
+			Revenue:       int(dbDiary.Revenue),
+			Homepage:      dbDiary.Homepage,
+			Tagline:       dbDiary.Tagline,
+			Trailer:       dbDiary.Trailer,
+			Genre:         movieGenres,
+			Runtime:       int(dbDiary.Runtime),
+		},
 	}
 }
 

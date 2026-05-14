@@ -14,4 +14,5 @@ type AuthUser struct { // User strut to hold json response
 	UpdatedAt time.Time `json:"updated_at"`
 	Email     string    `json:"email"`
 	IsPremium bool      `json:"is_premium"`
+	Bio       string    `json:"bio"`
 }

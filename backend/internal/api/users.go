@@ -5,30 +5,62 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/h0dy/ReelView/backend/internal/auth"
 	"github.com/h0dy/ReelView/backend/internal/database"
 	"github.com/h0dy/ReelView/backend/internal/types"
 	"github.com/h0dy/ReelView/backend/internal/utils"
 )
 
-func (cfg APIConfig) HandlerGetUser(w http.ResponseWriter, r *http.Request) {
-	userId, err := uuid.Parse(r.PathValue("userId"))
-	if err != nil {
-		respondWithErr(w, http.StatusBadRequest, "invalid user id", err)
-		return
-	}
+func (cfg APIConfig) HandlerGetUserByUsername(w http.ResponseWriter, r *http.Request) {
+	username := r.PathValue("username")
 
-	userRecord, err := cfg.DB.GetUserByID(r.Context(), userId)
+	userRecord, err := cfg.DB.GetUserByUsername(r.Context(), username)
 	if err != nil {
 		respondWithErr(w, http.StatusNotFound, "couldn't find user", err)
 		return
 	}
 
+	diariesRecord, _ := cfg.DB.GetUserDiaries(r.Context(), userRecord.ID)
+
+	if len(diariesRecord) > 5 {
+		diariesRecord = diariesRecord[:5]
+	}
+
 	user := utils.DbUserToJson(userRecord)
 
-	respondWithJson(w, http.StatusCreated, user)
+	diaries := []types.Diary{}
+	for _, d := range diariesRecord {
+		diaries = append(diaries, utils.DbDiaryUserToJson(d))
+	}
+
+	type response struct {
+		User    types.AuthUser `json:"user"`
+		Diaries []types.Diary  `json:"diaries"`
+	}
+
+	respondWithJson(w, http.StatusCreated, response{
+		User:    user,
+		Diaries: diaries,
+	})
 }
+
+// func (cfg APIConfig) HandlerGetUser(w http.ResponseWriter, r *http.Request) {
+// 	userId, err := uuid.Parse(r.PathValue("userId"))
+// 	if err != nil {
+// 		respondWithErr(w, http.StatusBadRequest, "invalid user id", err)
+// 		return
+// 	}
+
+// 	userRecord, err := cfg.DB.GetUserByID(r.Context(), userId)
+// 	if err != nil {
+// 		respondWithErr(w, http.StatusNotFound, "couldn't find user", err)
+// 		return
+// 	}
+
+// 	user := utils.DbUserToJson(userRecord)
+
+// 	respondWithJson(w, http.StatusCreated, user)
+// }
 
 func (cfg APIConfig) HandlerCreateUser(w http.ResponseWriter, r *http.Request) {
 	type reqBody struct {

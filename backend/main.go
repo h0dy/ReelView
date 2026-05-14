@@ -77,7 +77,7 @@ func main() {
 
 	// user
 	mux.HandleFunc("POST /api/users", apiConfig.HandlerCreateUser)
-	mux.HandleFunc("GET /api/users/{userId}", apiConfig.HandlerGetUser)
+	mux.HandleFunc("GET /api/users/{username}", apiConfig.HandlerGetUserByUsername)
 	mux.Handle(
 		"PUT /api/users/me",
 		apiConfig.JWTAuth(apiConfig.JWTSecret)(

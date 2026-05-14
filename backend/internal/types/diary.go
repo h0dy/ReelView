@@ -13,4 +13,6 @@ type Diary struct {
 	WatchedAt time.Time `json:"watched_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	CreatedAt time.Time `json:"created_at"`
+
+	Movie Movie `json:"movie"`
 }

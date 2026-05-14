@@ -71,6 +71,7 @@ type User struct {
 	HashedPassword string
 	IsPremium      bool
 	Name           string
+	Bio            string
 }
 
 type Watchlist struct {

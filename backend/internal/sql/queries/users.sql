@@ -21,3 +21,6 @@ UPDATE users
   updated_at = NOW() 
 WHERE id = $5
 RETURNING *;
+
+-- name: GetUserByUsername :one
+SELECT * FROM users WHERE username = $1;

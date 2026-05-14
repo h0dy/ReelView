@@ -186,7 +186,7 @@ func (cfg *APIConfig) HandlerGetUserDiaries(w http.ResponseWriter, r *http.Reque
 
 	diariesResponse := []types.Diary{}
 	for _, d := range diaries {
-		diary := utils.DbDiaryToJson(d)
+		diary := utils.DbDiaryUserToJson(d)
 		diariesResponse = append(diariesResponse, diary)
 	}
 

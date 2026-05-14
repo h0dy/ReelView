@@ -20,8 +20,29 @@ SELECT * FROM movie_diaries
   WHERE user_id = $1
   AND movie_id = $2;
 
--- name: GetUserDiaries :many
-SELECT * FROM movie_diaries WHERE user_id = $1;
-
 -- name: GetDiary :one
 SELECT * FROM movie_diaries WHERE id = $1;
+
+-- name: GetUserDiaries :many
+SELECT
+    movie_diaries.*,
+    movies.tmdb_id,
+    movies.imdb_id,
+    movies.title,
+    movies.original_title,
+    movies.poster_path,
+    movies.backdrop_path,
+    movies.overview,
+    movies.release_date,
+    movies.vote_average,
+    movies.vote_count,
+    movies.revenue,
+    movies.homepage,
+    movies.genres,
+    movies.runtime,
+    movies.trailer,
+    movies.tagline
+FROM movie_diaries
+JOIN movies
+ON movie_diaries.movie_id = movies.id
+WHERE movie_diaries.user_id = $1;

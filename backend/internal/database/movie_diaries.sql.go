@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/sqlc-dev/pqtype"
 )
 
 const createMovieDiary = `-- name: CreateMovieDiary :one
@@ -114,18 +115,64 @@ func (q *Queries) GetMovieDiariesForUser(ctx context.Context, arg GetMovieDiarie
 }
 
 const getUserDiaries = `-- name: GetUserDiaries :many
-SELECT id, movie_id, user_id, watched_at, created_at, updated_at FROM movie_diaries WHERE user_id = $1
+SELECT
+    movie_diaries.id, movie_diaries.movie_id, movie_diaries.user_id, movie_diaries.watched_at, movie_diaries.created_at, movie_diaries.updated_at,
+    movies.tmdb_id,
+    movies.imdb_id,
+    movies.title,
+    movies.original_title,
+    movies.poster_path,
+    movies.backdrop_path,
+    movies.overview,
+    movies.release_date,
+    movies.vote_average,
+    movies.vote_count,
+    movies.revenue,
+    movies.homepage,
+    movies.genres,
+    movies.runtime,
+    movies.trailer,
+    movies.tagline
+FROM movie_diaries
+JOIN movies
+ON movie_diaries.movie_id = movies.id
+WHERE movie_diaries.user_id = $1
 `
 
-func (q *Queries) GetUserDiaries(ctx context.Context, userID uuid.UUID) ([]MovieDiary, error) {
+type GetUserDiariesRow struct {
+	ID            uuid.UUID
+	MovieID       uuid.UUID
+	UserID        uuid.UUID
+	WatchedAt     time.Time
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	TmdbID        int32
+	ImdbID        string
+	Title         string
+	OriginalTitle string
+	PosterPath    string
+	BackdropPath  string
+	Overview      string
+	ReleaseDate   time.Time
+	VoteAverage   float64
+	VoteCount     int32
+	Revenue       int64
+	Homepage      string
+	Genres        pqtype.NullRawMessage
+	Runtime       int32
+	Trailer       string
+	Tagline       string
+}
+
+func (q *Queries) GetUserDiaries(ctx context.Context, userID uuid.UUID) ([]GetUserDiariesRow, error) {
 	rows, err := q.db.QueryContext(ctx, getUserDiaries, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []MovieDiary
+	var items []GetUserDiariesRow
 	for rows.Next() {
-		var i MovieDiary
+		var i GetUserDiariesRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.MovieID,
@@ -133,6 +180,22 @@ func (q *Queries) GetUserDiaries(ctx context.Context, userID uuid.UUID) ([]Movie
 			&i.WatchedAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.TmdbID,
+			&i.ImdbID,
+			&i.Title,
+			&i.OriginalTitle,
+			&i.PosterPath,
+			&i.BackdropPath,
+			&i.Overview,
+			&i.ReleaseDate,
+			&i.VoteAverage,
+			&i.VoteCount,
+			&i.Revenue,
+			&i.Homepage,
+			&i.Genres,
+			&i.Runtime,
+			&i.Trailer,
+			&i.Tagline,
 		); err != nil {
 			return nil, err
 		}

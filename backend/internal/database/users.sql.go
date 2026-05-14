@@ -14,7 +14,7 @@ import (
 const createUser = `-- name: CreateUser :one
 INSERT INTO users(id, created_at, updated_at, name, email, username, hashed_password)
 VALUES (gen_random_uuid(), NOW(), NOW(), $1, $2, $3, $4)
-RETURNING id, created_at, updated_at, email, username, hashed_password, is_premium, name
+RETURNING id, created_at, updated_at, email, username, hashed_password, is_premium, name, bio
 `
 
 type CreateUserParams struct {
@@ -41,6 +41,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.HashedPassword,
 		&i.IsPremium,
 		&i.Name,
+		&i.Bio,
 	)
 	return i, err
 }
@@ -55,7 +56,7 @@ func (q *Queries) DeleteUsers(ctx context.Context) error {
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, created_at, updated_at, email, username, hashed_password, is_premium, name FROM users WHERE email = $1
+SELECT id, created_at, updated_at, email, username, hashed_password, is_premium, name, bio FROM users WHERE email = $1
 `
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
@@ -70,12 +71,13 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.HashedPassword,
 		&i.IsPremium,
 		&i.Name,
+		&i.Bio,
 	)
 	return i, err
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, created_at, updated_at, email, username, hashed_password, is_premium, name FROM users WHERE id = $1
+SELECT id, created_at, updated_at, email, username, hashed_password, is_premium, name, bio FROM users WHERE id = $1
 `
 
 func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
@@ -90,6 +92,28 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
 		&i.HashedPassword,
 		&i.IsPremium,
 		&i.Name,
+		&i.Bio,
+	)
+	return i, err
+}
+
+const getUserByUsername = `-- name: GetUserByUsername :one
+SELECT id, created_at, updated_at, email, username, hashed_password, is_premium, name, bio FROM users WHERE username = $1
+`
+
+func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserByUsername, username)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Email,
+		&i.Username,
+		&i.HashedPassword,
+		&i.IsPremium,
+		&i.Name,
+		&i.Bio,
 	)
 	return i, err
 }
@@ -102,7 +126,7 @@ UPDATE users
   name = $4,
   updated_at = NOW() 
 WHERE id = $5
-RETURNING id, created_at, updated_at, email, username, hashed_password, is_premium, name
+RETURNING id, created_at, updated_at, email, username, hashed_password, is_premium, name, bio
 `
 
 type UpdateUserParams struct {
@@ -131,6 +155,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.HashedPassword,
 		&i.IsPremium,
 		&i.Name,
+		&i.Bio,
 	)
 	return i, err
 }
