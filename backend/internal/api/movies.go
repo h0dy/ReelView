@@ -29,12 +29,6 @@ func (cfg *APIConfig) HandlerGetMovies(w http.ResponseWriter, r *http.Request) {
 func (cfg *APIConfig) HandlerGetMovieDetails(w http.ResponseWriter, r *http.Request) {
 	tmdbId, _ := strconv.Atoi(r.PathValue("tmdbId"))
 
-	type response struct {
-		Movie        types.Movie          `json:"movie"`
-		Reviews      []types.MovieReview  `json:"reviews"`
-		UserMetadata *types.UserMovieMeta `json:"user_metadata"`
-	}
-
 	w.Header().Set("Content-Type", "application/json")
 	defer r.Body.Close()
 
@@ -47,6 +41,7 @@ func (cfg *APIConfig) HandlerGetMovieDetails(w http.ResponseWriter, r *http.Requ
 				respondWithErr(w, http.StatusNotFound, "movie doesn't exit", err)
 				return
 			}
+
 			respondWithErr(w, http.StatusInternalServerError, "something went wrong with getting couldn't get the movie", err)
 			return
 		}
@@ -70,6 +65,12 @@ func (cfg *APIConfig) HandlerGetMovieDetails(w http.ResponseWriter, r *http.Requ
 	}
 
 	meta := cfg.GetUserMovieMeta(r.Context(), r, movie.ID)
+
+	type response struct {
+		Movie        types.Movie          `json:"movie"`
+		Reviews      []types.MovieReview  `json:"reviews"`
+		UserMetadata *types.UserMovieMeta `json:"user_metadata"`
+	}
 
 	respondWithJson(w, http.StatusOK, response{
 		Movie:        movie,

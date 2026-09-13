@@ -17,10 +17,6 @@ func (cfg *APIConfig) HandlerUserLogin(w http.ResponseWriter, r *http.Request) {
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
-	type response struct {
-		User  types.AuthUser `json:"user"`
-		Token string         `json:"token"`
-	}
 
 	w.Header().Set("Content-Type", "application/json")
 	defer r.Body.Close()
@@ -58,6 +54,12 @@ func (cfg *APIConfig) HandlerUserLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	diariesRecord, _ := cfg.DB.GetUserDiaries(r.Context(), user.ID)
+
+	if len(diariesRecord) > 5 {
+		diariesRecord = diariesRecord[:5]
+	}
+
 	http.SetCookie(w, &http.Cookie{
 		Name:     "refresh_token",
 		Value:    refreshToken,
@@ -70,6 +72,11 @@ func (cfg *APIConfig) HandlerUserLogin(w http.ResponseWriter, r *http.Request) {
 
 	userResponse := utils.DbUserToJson(user)
 
+	type response struct {
+		User  types.AuthUser `json:"user"`
+		Token string         `json:"token"`
+	}
+
 	respondWithJson(w, http.StatusOK, response{
 		User:  userResponse,
 		Token: accessToken,
@@ -77,10 +84,6 @@ func (cfg *APIConfig) HandlerUserLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (cfg *APIConfig) HandlerTestToken(w http.ResponseWriter, r *http.Request) {
-	type response struct {
-		Message string `json:"message"`
-	}
-
 	w.Header().Set("Content-Type", "application/json")
 	defer r.Body.Close()
 
@@ -88,6 +91,10 @@ func (cfg *APIConfig) HandlerTestToken(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		respondWithErr(w, http.StatusUnauthorized, "Unauthorized", nil)
 		return
+	}
+
+	type response struct {
+		Message string `json:"message"`
 	}
 
 	respondWithJson(w, http.StatusOK, response{
@@ -104,9 +111,6 @@ func (cfg *APIConfig) HandlerRefreshToken(w http.ResponseWriter, r *http.Request
 	}
 	refreshToken := cookie.Value
 
-	type response struct {
-		Token string `json:"token"`
-	}
 	w.Header().Set("Content-Type", "application/json")
 
 	user, err := cfg.DB.GetUserFromRefreshToken(r.Context(), refreshToken)
@@ -151,6 +155,11 @@ func (cfg *APIConfig) HandlerRefreshToken(w http.ResponseWriter, r *http.Request
 		Path:     "/api/auth",
 		MaxAge:   60 * 24 * 60 * 60, // 60 days,
 	})
+
+	type response struct {
+		Token string `json:"token"`
+	}
+
 	respondWithJson(w, http.StatusOK, response{
 		Token: accessToken,
 	})
