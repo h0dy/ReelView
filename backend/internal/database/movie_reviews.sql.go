@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/sqlc-dev/pqtype"
 )
 
 const createMovieReview = `-- name: CreateMovieReview :one
@@ -153,18 +154,66 @@ func (q *Queries) GetSingleMovieReview(ctx context.Context, id uuid.UUID) (Movie
 }
 
 const getUserReviews = `-- name: GetUserReviews :many
-SELECT id, movie_id, user_id, review, rating, is_spoiler, created_at, updated_at FROM movie_reviews WHERE user_id = $1
+SELECT
+    movie_reviews.id, movie_reviews.movie_id, movie_reviews.user_id, movie_reviews.review, movie_reviews.rating, movie_reviews.is_spoiler, movie_reviews.created_at, movie_reviews.updated_at,
+    movies.tmdb_id,
+    movies.imdb_id,
+    movies.title,
+    movies.original_title,
+    movies.poster_path,
+    movies.backdrop_path,
+    movies.overview,
+    movies.release_date,
+    movies.vote_average,
+    movies.vote_count,
+    movies.revenue,
+    movies.homepage,
+    movies.genres,
+    movies.runtime,
+    movies.trailer,
+    movies.tagline
+FROM movie_reviews
+JOIN movies
+ON movie_reviews.movie_id = movies.id
+WHERE movie_reviews.user_id = $1
 `
 
-func (q *Queries) GetUserReviews(ctx context.Context, userID uuid.UUID) ([]MovieReview, error) {
+type GetUserReviewsRow struct {
+	ID            uuid.UUID
+	MovieID       uuid.UUID
+	UserID        uuid.UUID
+	Review        string
+	Rating        float32
+	IsSpoiler     bool
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	TmdbID        int32
+	ImdbID        string
+	Title         string
+	OriginalTitle string
+	PosterPath    string
+	BackdropPath  string
+	Overview      string
+	ReleaseDate   time.Time
+	VoteAverage   float64
+	VoteCount     int32
+	Revenue       int64
+	Homepage      string
+	Genres        pqtype.NullRawMessage
+	Runtime       int32
+	Trailer       string
+	Tagline       string
+}
+
+func (q *Queries) GetUserReviews(ctx context.Context, userID uuid.UUID) ([]GetUserReviewsRow, error) {
 	rows, err := q.db.QueryContext(ctx, getUserReviews, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []MovieReview
+	var items []GetUserReviewsRow
 	for rows.Next() {
-		var i MovieReview
+		var i GetUserReviewsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.MovieID,
@@ -174,6 +223,22 @@ func (q *Queries) GetUserReviews(ctx context.Context, userID uuid.UUID) ([]Movie
 			&i.IsSpoiler,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.TmdbID,
+			&i.ImdbID,
+			&i.Title,
+			&i.OriginalTitle,
+			&i.PosterPath,
+			&i.BackdropPath,
+			&i.Overview,
+			&i.ReleaseDate,
+			&i.VoteAverage,
+			&i.VoteCount,
+			&i.Revenue,
+			&i.Homepage,
+			&i.Genres,
+			&i.Runtime,
+			&i.Trailer,
+			&i.Tagline,
 		); err != nil {
 			return nil, err
 		}

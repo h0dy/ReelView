@@ -19,12 +19,18 @@ func (cfg APIConfig) HandlerGetUserByUsername(w http.ResponseWriter, r *http.Req
 		respondWithErr(w, http.StatusNotFound, "couldn't find user", err)
 		return
 	}
+	authUser := utils.DbUserToJson(userRecord)
 
 	diariesRecord, _ := cfg.DB.GetUserDiaries(r.Context(), userRecord.ID)
+	reviewsRecord, _ := cfg.DB.GetUserReviews(r.Context(), userRecord.ID)
 
-	if len(diariesRecord) > 5 {
-		diariesRecord = diariesRecord[:5]
-	}
+	// if len(diariesRecord) > 5 {
+	// 	diariesRecord = diariesRecord[:5]
+	// }
+
+	// if len(reviewsRecord) > 5 {
+	// 	reviewsRecord = reviewsRecord[:5]
+	// }
 
 	user := utils.DbUserToJson(userRecord)
 
@@ -33,14 +39,21 @@ func (cfg APIConfig) HandlerGetUserByUsername(w http.ResponseWriter, r *http.Req
 		diaries = append(diaries, utils.DbDiaryUserToJson(d))
 	}
 
+	reviews := []types.MovieReview{}
+	for _, r := range reviewsRecord {
+		reviews = append(reviews, utils.DbReviewDetailsTypeToJson(r, authUser))
+	}
+
 	type response struct {
-		User    types.AuthUser `json:"user"`
-		Diaries []types.Diary  `json:"diaries"`
+		User    types.AuthUser      `json:"user"`
+		Diaries []types.Diary       `json:"diaries"`
+		Reviews []types.MovieReview `json:"reviews"`
 	}
 
 	respondWithJson(w, http.StatusCreated, response{
 		User:    user,
 		Diaries: diaries,
+		Reviews: reviews,
 	})
 }
 

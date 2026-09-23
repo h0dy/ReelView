@@ -74,6 +74,45 @@ func DbReviewTypeToJson(dbReview database.MovieReview, user types.AuthUser) type
 	}
 }
 
+func DbReviewDetailsTypeToJson(dbReview database.GetUserReviewsRow, user types.AuthUser) types.MovieReview {
+	var movieGenres []types.Genre
+	if dbReview.Genres.Valid {
+		if err := json.Unmarshal(dbReview.Genres.RawMessage, &movieGenres); err != nil {
+			return types.MovieReview{}
+		}
+	}
+
+	return types.MovieReview{
+		ID:        dbReview.ID,
+		MovieID:   dbReview.MovieID,
+		Text:      dbReview.Review,
+		Rating:    dbReview.Rating,
+		IsSpoiler: dbReview.IsSpoiler,
+		CreatedAt: dbReview.CreatedAt,
+		UpdatedAt: dbReview.UpdatedAt,
+		User:      user,
+		Movie: types.Movie{
+			ID:            dbReview.ID,
+			TmdbID:        int(dbReview.TmdbID),
+			ImdbID:        dbReview.ImdbID,
+			Title:         dbReview.Title,
+			OriginalTitle: dbReview.OriginalTitle,
+			PosterPath:    dbReview.PosterPath,
+			BackdropPath:  dbReview.BackdropPath,
+			Overview:      dbReview.Overview,
+			ReleaseDate:   dbReview.ReleaseDate.String(),
+			VoteAverage:   dbReview.VoteAverage,
+			VoteCount:     int(dbReview.VoteCount),
+			Revenue:       int(dbReview.Revenue),
+			Homepage:      dbReview.Homepage,
+			Tagline:       dbReview.Tagline,
+			Trailer:       dbReview.Trailer,
+			Genre:         movieGenres,
+			Runtime:       int(dbReview.Runtime),
+		},
+	}
+}
+
 func DbUserToJson(dbUser database.User) types.AuthUser {
 	return types.AuthUser{
 		ID:        dbUser.ID,

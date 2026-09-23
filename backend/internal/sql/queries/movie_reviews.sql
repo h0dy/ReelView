@@ -38,4 +38,25 @@ WHERE movie_id = $4 AND user_id = $5
 RETURNING *;
 
 -- name: GetUserReviews :many
-SELECT * FROM movie_reviews WHERE user_id = $1;
+SELECT
+    movie_reviews.*,
+    movies.tmdb_id,
+    movies.imdb_id,
+    movies.title,
+    movies.original_title,
+    movies.poster_path,
+    movies.backdrop_path,
+    movies.overview,
+    movies.release_date,
+    movies.vote_average,
+    movies.vote_count,
+    movies.revenue,
+    movies.homepage,
+    movies.genres,
+    movies.runtime,
+    movies.trailer,
+    movies.tagline
+FROM movie_reviews
+JOIN movies
+ON movie_reviews.movie_id = movies.id
+WHERE movie_reviews.user_id = $1;

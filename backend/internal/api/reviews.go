@@ -207,7 +207,7 @@ func (cfg *APIConfig) HandlerGetUserReviews(w http.ResponseWriter, r *http.Reque
 	reviewsResponse := []types.MovieReview{}
 	authUser := utils.DbUserToJson(user)
 	for _, r := range reviews {
-		review := utils.DbReviewTypeToJson(r, authUser)
+		review := utils.DbReviewDetailsTypeToJson(r, authUser)
 		reviewsResponse = append(reviewsResponse, review)
 	}
 
