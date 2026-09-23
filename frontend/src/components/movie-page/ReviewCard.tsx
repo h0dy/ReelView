@@ -2,20 +2,24 @@ import type { Review } from "@/types/reviews";
 import { getUserAvatarInitials } from "@/utils/helpers";
 import { AlertTriangle, Star } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 const ReviewCard = ({ review }: { review: Review }) => {
   const [expanded, setExpanded] = useState(false);
   const isLong = review.text.length > 300;
   const initials = getUserAvatarInitials(review.user);
   const formattedDate = new Date(review.created_at).toLocaleDateString(
-    "en-US",
+    "en-GB",
     { month: "short", day: "numeric", year: "numeric" }
   );
 
   return (
     <div className="rounded-xl border border-border bg-card p-4 space-y-3">
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2.5">
+        <Link
+          to={`/users/${review.user.username}`}
+          className="flex items-center gap-2.5"
+        >
           <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-semibold uppercase shrink-0">
             {initials}
           </div>
@@ -27,7 +31,7 @@ const ReviewCard = ({ review }: { review: Review }) => {
               @{review.user.username} · {formattedDate}
             </p>
           </div>
-        </div>
+        </Link>
 
         <div className="flex items-center gap-2">
           {review.is_spoiler && (

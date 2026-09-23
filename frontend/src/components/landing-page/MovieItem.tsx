@@ -19,8 +19,8 @@ const MovieItem = ({ movie }: { movie: Movie }) => {
 
       <div
         className={`absolute top-3/5 ${
-          movie.genre.length > 4 || movie.original_title.length > 30
-            ? "sm:top-3/5"
+          movie.genre.length > 2 || movie.original_title.length > 20
+            ? "sm:top-4/6"
             : "sm:top-3/4"
         } left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center gap-2 w-full px-4`}
       >

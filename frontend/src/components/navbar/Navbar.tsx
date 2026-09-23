@@ -15,7 +15,6 @@ const Navbar = () => {
       logout();
       navigate("/");
     } else if (action === "profile") {
-      console.log("navigating to profile");
       navigate(`/users/${user?.username}`);
       navigate(0); // force refresh
     }

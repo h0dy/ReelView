@@ -1,3 +1,4 @@
+import type { MovieDetail } from "./movies";
 import type { AuthUser } from "./users";
 
 export type Review = {
@@ -9,4 +10,5 @@ export type Review = {
   created_at: string;
   updated_at: string;
   user: AuthUser;
+  movie: MovieDetail;
 };
