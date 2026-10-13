@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { SearchContext } from "./seach-context";
+import { SearchContext } from "./seachContext";
 
 export const SearchProvider = ({ children }: { children: ReactNode }) => {
   const [query, setQuery] = useState("");

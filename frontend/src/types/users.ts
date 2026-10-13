@@ -1,4 +1,5 @@
 import type { Diary } from "./diary";
+import type { Review } from "./reviews";
 
 export type AuthUser = {
   id: string; // UUID as string
@@ -10,7 +11,7 @@ export type AuthUser = {
   is_premium: boolean;
   bio: string;
 };
-  
+
 export type User = {
   email: string;
   password: string;
@@ -23,9 +24,10 @@ export type NewUser = {
   username: string;
 };
 
-export type UserWithDiaries = {
+export type UserWithDetails = {
   user: AuthUser;
   diaries: Diary[];
+  reviews: Review[];
 };
 
 export type UserWithToken = {

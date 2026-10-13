@@ -27,6 +27,7 @@ const MoviePage = () => {
   }
 
   const { movie, reviews } = data;
+  console.log(data)
 
   return (
     <div className="min-h-screen bg-background">

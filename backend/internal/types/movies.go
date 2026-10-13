@@ -29,7 +29,7 @@ type Movie struct {
 type UserMovieMeta struct {
 	TmdbID        int32       `json:"tmdb_id"`
 	MovieID       uuid.UUID   `json:"movie_id"`
-	IsInWatchlist interface{} `json:"is_in_watchlist"`
+	IsInWatchlist any         `json:"is_in_watchlist"`
 	Diary         *UserDiary  `json:"diary,omitempty"`
 	Review        *UserReview `json:"review,omitempty"`
 }

@@ -69,7 +69,7 @@ func (cfg *APIConfig) HandlerGetMovieDetails(w http.ResponseWriter, r *http.Requ
 	type response struct {
 		Movie        types.Movie          `json:"movie"`
 		Reviews      []types.MovieReview  `json:"reviews"`
-		UserMetadata *types.UserMovieMeta `json:"user_metadata"`
+		UserMetadata types.UserMovieMeta `json:"user_metadata"`
 	}
 
 	respondWithJson(w, http.StatusOK, response{

@@ -10,10 +10,10 @@ import (
 	"github.com/h0dy/ReelView/backend/internal/utils"
 )
 
-func (cfg *APIConfig) GetUserMovieMeta(ctx context.Context, r *http.Request, movieID uuid.UUID) *types.UserMovieMeta {
+func (cfg *APIConfig) GetUserMovieMeta(ctx context.Context, r *http.Request, movieID uuid.UUID) types.UserMovieMeta {
 	authUser, ok := r.Context().Value(UserContextKey).(*types.AuthUser)
 	if !ok {
-		return nil
+		return types.UserMovieMeta{}
 	}
 
 	userData, err := cfg.DB.GetUserMetadataForMovie(r.Context(), database.GetUserMetadataForMovieParams{
@@ -21,10 +21,10 @@ func (cfg *APIConfig) GetUserMovieMeta(ctx context.Context, r *http.Request, mov
 		ID:     movieID,
 	})
 	if err != nil {
-		return nil
+		return types.UserMovieMeta{}
 	}
 
 	meta := utils.DbUserMetaToJson(userData)
 
-	return &meta
+	return meta
 }

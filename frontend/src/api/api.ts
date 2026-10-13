@@ -1,6 +1,7 @@
 import axios from "axios";
 import { toast } from "sonner";
 
+// create pre-config instance
 const api = axios.create({
   baseURL: import.meta.env.DEV ? "" : import.meta.env.VITE_API_URL,
   withCredentials: true, // include cookies on every request
@@ -64,7 +65,7 @@ api.interceptors.response.use(
 
       try {
         // use plain axios to avoid triggering this interceptor again
-        const res = await axios.post(
+        const res = await axios.post<{ token: string }>(
           "/api/auth/refresh",
           {},
           { withCredentials: true }

@@ -4,7 +4,7 @@ import useInitAuth from "@/hooks/useInitAuth";
 import type { AuthUser } from "@/types/users";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "./auth-context";
+import { AuthContext } from "./authContext";
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
