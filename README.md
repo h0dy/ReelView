@@ -1,5 +1,4 @@
-# ReelView
-full-stack app for discovering, reviewing, and managing movies
-## Demo
+## This repository has been split into two separate repositories to keep the frontend and backend independently maintained.
 
-![App Demo](frontend/src/assets/demo.gif)
+- **Frontend:** [ReelView Frontend](https://github.com/h0dy/ReelView-frontend)
+- **Backend:** [ReelView Backend](https://github.com/h0dy/ReelView-backend)
